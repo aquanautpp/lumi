@@ -1,0 +1,12 @@
+{
+  "name": "lumi-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.17.1",
+    "openai": "4.56.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
