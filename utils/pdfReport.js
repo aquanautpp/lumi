@@ -2,7 +2,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import { definirNivel } from './niveis.js';
 
-function gerarPdfRelatorio({ nome, numero, progresso, caminho }) {
+function generatePdfReport({ nome, numero, progresso, caminho }) {
   const doc = new PDFDocument();
   doc.pipe(fs.createWriteStream(caminho));
 
@@ -64,4 +64,4 @@ function gerarPdfRelatorio({ nome, numero, progresso, caminho }) {
   doc.end();
 }
 
-export { gerarPdfRelatorio };
+export { generatePdfReport };
