@@ -16,4 +16,4 @@ function validarResposta(respostaUsuario, respostaCorreta, sinonimos = []) {
 }
 
 export { validarResposta };
-feat: adiciona função de validação de respostas com sinônimos
+// feat: adiciona função de validação de respostas com sinônimos
