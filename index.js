@@ -1,17 +1,23 @@
 import express from 'express';
 import OpenAI from 'openai';
+import twilio from 'twilio';
 
 const app = express();
 app.use(express.json());
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const FROM_PHONE = process.env.FROM_PHONE;
 
-console.log("Iniciando o Lumi...");
+const TWILIO_SID = process.env.TWILIO_SID;
+const TWILIO_AUTH = process.env.TWILIO_AUTH;
+const FROM_PHONE = process.env.FROM_PHONE;
+const TO_PHONE = process.env.TO_PHONE;
+
+const client = twilio(TWILIO_SID, TWILIO_AUTH);
+
+console.log("🚀 Lumi com Twilio iniciando...");
 
 app.post('/webhook', async (req, res) => {
-  console.log("Webhook recebeu uma mensagem:", req.body);
+  console.log("📩 Webhook recebeu:", req.body);
 
   const msg = req.body;
   if (!msg || !msg.entry || !msg.entry[0].changes || !msg.entry[0].changes[0].value.messages) {
@@ -20,15 +26,10 @@ app.post('/webhook', async (req, res) => {
   }
 
   const message = msg.entry[0].changes[0].value.messages[0];
-  if (!message || !message.text || !message.text.body) {
-    res.sendStatus(200);
-    return;
-  }
+  const from = TO_PHONE;
+  const text = message.text?.body || "";
 
-  const from = message.from;
-  const text = message.text.body;
-
-  console.log(`Mensagem de ${from}: ${text}`);
+  console.log(`Mensagem recebida de ${from}: ${text}`);
 
   const prompt = `
   Você é "Lumi", um(a) tutor(a) de matemática paciente e neutro(a).
@@ -49,28 +50,21 @@ app.post('/webhook', async (req, res) => {
 
     const answer = response.choices[0].message.content.trim();
 
-    await fetch(`https://graph.facebook.com/v20.0/${FROM_PHONE}/messages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to: from,
-        type: 'text',
-        text: { body: answer }
-      })
+    await client.messages.create({
+      from: FROM_PHONE,
+      to: TO_PHONE,
+      body: answer
     });
 
-    console.log(`✔ Resposta enviada a ${from}: "${answer}"`);
+    console.log(`✔️ Resposta enviada via Twilio: "${answer}"`);
     res.sendStatus(200);
   } catch (err) {
-    console.error('❌ Erro:', err);
+    console.error('❌ Erro ao responder:', err);
     res.sendStatus(500);
   }
 });
 
+// Webhook de verificação (opcional)
 app.get('/webhook', (req, res) => {
   const verifyToken = process.env.VERIFY_TOKEN || 'lumi123';
   const mode = req.query['hub.mode'];
@@ -87,5 +81,5 @@ app.get('/webhook', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🌐 Servidor Lumi ativo na porta ${PORT}`);
 });
