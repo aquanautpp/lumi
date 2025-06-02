@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
 import { desafios } from './utils/desafios.js';
-import { salvarMemoria, memoriaUsuarios, desafiosPendentes } from './utils/memoria.js';
+import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memoria.js';
 import { gerarPdfRelatorio } from './utils/pdf.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
