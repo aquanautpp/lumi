@@ -2,12 +2,12 @@
   "name": "lumi-bot",
   "version": "1.5.0",
   "type": "module",
- "dependencies": {
-  "express": "^4.18.2",
-  "openai": "^4.56.0",
-  "node-fetch": "^3.3.2",
-  "pdfkit": "^0.15.0"
-}
+  "dependencies": {
+    "express": "^4.18.2",
+    "openai": "^4.56.0",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "^0.15.0"
+  },
   "scripts": {
     "start": "node index.js"
   }
