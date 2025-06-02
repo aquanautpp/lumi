@@ -1,27 +1,46 @@
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 
-export function generatePdfReport({ nome, numero, progresso, caminho }) {
-  const doc = new PDFDocument();
+export function generatePdfReport({ nome, numero, progresso = [], caminho }) {
+  const doc = new PDFDocument({ margin: 50 });
+
   doc.pipe(fs.createWriteStream(caminho));
 
-  doc.fontSize(20).text('Relatório Semanal - Professora Lumi 💜', { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(14).text(`Aluno(a): ${nome || 'Não informado'}`);
-  doc.text(`Número: ${numero}`);
-  doc.moveDown();
+  // Cabeçalho
+  doc.fontSize(20)
+    .text('📚 Relatório Semanal - Professora Lumi 💜', { align: 'center' })
+    .moveDown();
 
-  doc.fontSize(16).text('📊 Desempenho nos desafios:');
-  doc.moveDown();
+  // Informações básicas
+  doc.fontSize(14)
+    .text(`Aluno(a): ${nome || 'Não informado'}`)
+    .text(`Número: ${numero || 'Não informado'}`)
+    .moveDown();
 
-  progresso.forEach((item, i) => {
-    doc.fontSize(12).text(
-      `${i + 1}. Categoria: ${item.categoria} | Acertos: ${item.acertos} | Erros: ${item.erros}`
-    );
-  });
+  // Desempenho
+  doc.fontSize(16).text('📊 Desempenho nos desafios:', { underline: true }).moveDown(0.5);
+
+  if (progresso.length === 0) {
+    doc.fontSize(12).text('Nenhum desafio registrado nesta semana.');
+  } else {
+    progresso.forEach((item, i) => {
+      const categoria = item.categoria || 'Indefinida';
+      const acertos = item.acertos ?? 0;
+      const erros = item.erros ?? 0;
+
+      doc.fontSize(12).text(
+        `${i + 1}. Categoria: ${categoria} | ✅ Acertos: ${acertos} | ❌ Erros: ${erros}`
+      );
+    });
+  }
 
   doc.moveDown(2);
-  doc.text('Continue incentivando o aprendizado! Até a próxima semana. 😊', { align: 'center' });
+
+  // Encerramento
+  doc.fontSize(12).text(
+    'Continue incentivando o aprendizado com carinho e curiosidade! Até a próxima semana. ✨',
+    { align: 'center' }
+  );
 
   doc.end();
 }
