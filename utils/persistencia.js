@@ -53,4 +53,4 @@ export {
   salvarMemoria,
   salvarDesafiosPendentes
 };
-feat: adiciona persistência em disco para memória e desafios pendentes
+// feat: adiciona persistência em disco para memória e desafios pendentes
