@@ -4,24 +4,19 @@ import fs from 'fs';
 export function generatePDFReport({ nome, numero, progresso, caminho }) {
   const doc = new PDFDocument();
   doc.pipe(fs.createWriteStream(caminho));
-
   doc.fontSize(20).text('Relatório Semanal - Professora Lumi 💜', { align: 'center' });
   doc.moveDown();
   doc.fontSize(14).text(`Aluno(a): ${nome || 'Não informado'}`);
   doc.text(`Número: ${numero}`);
   doc.moveDown();
-
   doc.fontSize(16).text('📊 Desempenho nos desafios:');
   doc.moveDown();
-
   progresso.forEach((item, i) => {
     doc.fontSize(12).text(
       `${i + 1}. Categoria: ${item.categoria} | Acertos: ${item.acertos} | Erros: ${item.erros}`
     );
   });
-
   doc.moveDown(2);
   doc.text('Continue incentivando o aprendizado! Até a próxima semana. 😊', { align: 'center' });
-
   doc.end();
 }
