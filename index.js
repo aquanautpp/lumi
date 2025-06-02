@@ -10,7 +10,8 @@ import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel } from './utils/niveis.js';
 import { validarResposta } from './utils/validacao.js';
-import { obterDesafioDoDia } from './utils/rotinaSemanal.js'; // NOVO
+import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
+import { getFala } from './utils/mascote.js';
 import cron from 'node-cron';
 import { gerarRespostaIA } from './utils/ia.js';
 
@@ -31,12 +32,16 @@ app.post('/webhook', async (req, res) => {
     atualizarMemoria(from, desafioPendente.categoria, acertou, texto, desafioPendente.resposta);
 
     const feedback = gerarFeedback(acertou, desafioPendente.categoria);
+    const falaMascote = getFala(acertou ? 'acerto' : 'erro');
+
     await enviarMensagemWhatsApp(from, feedback);
+    await enviarMensagemWhatsApp(from, falaMascote);
 
     const usuario = memoriaUsuarios[from];
     const mensagemNivel = verificarNivel(usuario);
     if (mensagemNivel) {
       await enviarMensagemWhatsApp(from, mensagemNivel);
+      await enviarMensagemWhatsApp(from, getFala('nivel'));
     }
 
     if (acertou) delete desafiosPendentes[from];
@@ -67,6 +72,10 @@ cron.schedule('0 9 * * 0', async () => {
     await gerarPdfRelatorio({ nome: usuario.nome || 'Aluno(a)', numero, progresso: usuario.historico, caminho });
     const url = await uploadPdfToCloudinary(caminho);
     await enviarMidiaWhatsApp(numero, 'document', url);
+
+    // Mensagem de saudade do mascote
+    const falaMascote = getFala('ausencia');
+    await enviarMensagemWhatsApp(numero, falaMascote);
   }
 });
 
