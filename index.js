@@ -7,6 +7,7 @@ import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memor
 import { gerarPdfRelatorio } from './utils/pdf.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
+import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel } from './utils/niveis.js';
 import { validarResposta } from './utils/validacao.js';
@@ -27,6 +28,20 @@ app.post('/webhook', async (req, res) => {
   const { from, texto } = req.body;
   const desafioPendente = desafiosPendentes[from];
 
+  const respondeuEstilo = await processarRespostaEstilo(from, texto);
+  if (respondeuEstilo) return res.sendStatus(200);
+
+  // Aplica pergunta automática entre 5ª e 8ª interação
+  const usuario = memoriaUsuarios[from] || { interacoes: 0 };
+  usuario.interacoes = (usuario.interacoes || 0) + 1;
+  memoriaUsuarios[from] = usuario;
+  salvarMemoria();
+
+  if (usuario.interacoes >= 5 && usuario.interacoes <= 8 && !(usuario.estilo?.concluido)) {
+    await aplicarPerguntaEstilo(from);
+    return res.sendStatus(200);
+  }
+  
   if (desafioPendente) {
     const acertou = validarResposta(texto, desafioPendente.resposta, desafioPendente.sinonimos || []);
     atualizarMemoria(from, desafioPendente.categoria, acertou, texto, desafioPendente.resposta);
