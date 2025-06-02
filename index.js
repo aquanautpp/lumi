@@ -1,26 +1,34 @@
 import express from 'express';
 import OpenAI from 'openai';
 import fetch from 'node-fetch';
-import fs from 'fs';
+import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { generatePdfReport } from './utils/pdfReport.js';
-import twilio from 'twilio';
 
+// Carrega variáveis do .env
+dotenv.config();
+
+// Configuração de caminhos
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// App Express
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Para payloads do Twilio
+app.use(express.urlencoded({ extended: true }));
 
+// Variáveis de ambiente
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const FROM_PHONE = process.env.FROM_PHONE;
+const FROM_PHONE_ID = process.env.FROM_PHONE_ID;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'lumi123';
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+// Estado em memória
 const userProgress = {};
+const desafiosPendentes = {};
+
+// Desafios disponíveis
 const desafios = {
   matematica: [
     { enunciado: 'Se você tem 8 balas e dá 3 para seu amigo, com quantas fica?', resposta: '5' },
@@ -34,6 +42,7 @@ const desafios = {
   ]
 };
 
+// Funções utilitárias
 function escolherDesafioAleatorio() {
   const categorias = Object.keys(desafios);
   const categoria = categorias[Math.floor(Math.random() * categorias.length)];
@@ -42,7 +51,9 @@ function escolherDesafioAleatorio() {
 }
 
 function fraseMotivacional(acertou) {
-  return acertou ? 'Mandou bem! Isso é pensar com lógica 🎯' : 'Quase! Vamos tentar de novo juntos? 💡';
+  return acertou
+    ? 'Mandou bem! Isso é pensar com lógica 🎯'
+    : 'Quase! Vamos tentar de novo juntos? 💡';
 }
 
 function salvarProgresso(numero, categoria, acertou) {
@@ -50,61 +61,29 @@ function salvarProgresso(numero, categoria, acertou) {
   userProgress[numero].push({ categoria, acertou, data: new Date() });
 }
 
+// Envio de mensagens via API do WhatsApp (Meta)
 async function enviarMensagemWhatsApp(to, mensagem) {
-  await fetch(`https://graph.facebook.com/v20.0/${FROM_PHONE}/messages`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      to,
-      type: 'text',
-      text: { body: mensagem }
-    })
-  });
-}
-
-async function enviarMensagemTwilio(to, mensagem) {
-  await twilioClient.messages.create({
-    from: 'whatsapp:+14155238886', // Número do Sandbox
-    body: mensagem,
-    to: `whatsapp:${to}`
-  });
-}
-
-const desafiosPendentes = {};
-
-app.post('/webhook', async (req, res) => {
-  // Suporte ao Twilio (testes no Sandbox)
-  if (req.body.Body && req.body.From) {
-    const from = req.body.From.replace('whatsapp:', '');
-    const texto = req.body.Body.toLowerCase();
-    console.log(`📩 Twilio Webhook: ${texto} de ${from}`);
-
-    if (texto.includes('quem criou') || texto.includes('criador')) {
-      await enviarMensagemTwilio(from, 'Fui criada por Victor Pires! 💡');
-      return res.sendStatus(200);
-    }
-
-    if (desafiosPendentes[from]) {
-      const esperado = desafiosPendentes[from];
-      const acertou = texto.trim() === esperado.resposta;
-      const feedback = fraseMotivacional(acertou);
-      await enviarMensagemTwilio(from, feedback);
-      salvarProgresso(from, esperado.categoria, acertou);
-      delete desafiosPendentes[from];
-      return res.sendStatus(200);
-    }
-
-    const { categoria, enunciado, resposta } = escolherDesafioAleatorio();
-    desafiosPendentes[from] = { categoria, resposta };
-    await enviarMensagemTwilio(from, `Desafio de ${categoria}: ${enunciado}`);
-    return res.sendStatus(200);
+  try {
+    await fetch(`https://graph.facebook.com/v20.0/${FROM_PHONE_ID}/messages`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'text',
+        text: { body: mensagem }
+      })
+    });
+  } catch (error) {
+    console.error('❌ Erro ao enviar mensagem pelo WhatsApp:', error);
   }
+}
 
-  // Lógica para Meta API
+// Webhook para recebimento de mensagens
+app.post('/webhook', async (req, res) => {
   const body = req.body;
   if (!body?.entry?.[0]?.changes?.[0]?.value?.messages) return res.sendStatus(200);
 
@@ -112,13 +91,15 @@ app.post('/webhook', async (req, res) => {
   const from = message.from;
   const texto = message.text?.body?.toLowerCase() || '';
 
-  console.log(`📩 Meta Webhook: ${texto} de ${from}`);
+  console.log(`📩 Mensagem recebida de ${from}: "${texto}"`);
 
+  // Respostas diretas
   if (texto.includes('quem criou') || texto.includes('criador')) {
     await enviarMensagemWhatsApp(from, 'Fui criada por Victor Pires! 💡');
     return res.sendStatus(200);
   }
 
+  // Verificação de desafio pendente
   if (desafiosPendentes[from]) {
     const esperado = desafiosPendentes[from];
     const acertou = texto.trim() === esperado.resposta;
@@ -129,6 +110,7 @@ app.post('/webhook', async (req, res) => {
     return res.sendStatus(200);
   }
 
+  // Início de nova interação + desafio
   const { categoria, enunciado, resposta } = escolherDesafioAleatorio();
   desafiosPendentes[from] = { categoria, resposta };
 
@@ -153,18 +135,22 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
+// Verificação inicial de webhook (GET)
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('✅ Webhook verificado com sucesso');
+    console.log('✅ Webhook verificado com sucesso!');
     res.status(200).send(challenge);
   } else {
     res.status(403).send('Verificação falhou');
   }
 });
 
+// Inicializa o servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Lumi rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Lumi rodando na porta ${PORT}`);
+});
