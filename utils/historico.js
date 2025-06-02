@@ -21,4 +21,3 @@ function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaC
 }
 
 export { atualizarMemoria };
-feat: adiciona função de atualização de histórico
