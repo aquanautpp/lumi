@@ -6,6 +6,10 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
+// Comentei a importação do pdfReport.js, já que não é usado
+// Descomente se precisar gerar relatórios PDF
+// import { generatePdfReport } from './utils/pdfReport.js';
+
 // Carrega variáveis do .env
 dotenv.config();
 
@@ -64,7 +68,7 @@ function salvarProgresso(numero, categoria, acertou) {
 // Envio de mensagens via API do WhatsApp (Meta)
 async function enviarMensagemWhatsApp(to, mensagem) {
   try {
-    await fetch(`https://graph.facebook.com/v20.0/${FROM_PHONE_ID}/messages`, {
+    const response = await fetch(`https://graph.facebook.com/v20.0/${FROM_PHONE_ID}/messages`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${WHATSAPP_TOKEN}`,
@@ -77,8 +81,12 @@ async function enviarMensagemWhatsApp(to, mensagem) {
         text: { body: mensagem }
       })
     });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Erro ao enviar mensagem pelo WhatsApp:', errorData);
+    }
   } catch (error) {
-    console.error('❌ Erro ao enviar mensagem pelo WhatsApp:', error);
+    console.error('❌ Erro de rede ao enviar mensagem pelo WhatsApp:', error);
   }
 }
 
