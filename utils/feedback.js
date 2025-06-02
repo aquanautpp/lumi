@@ -16,4 +16,3 @@ function gerarFeedback(acertou, categoria) {
 }
 
 export { gerarFeedback };
-feedback.js
