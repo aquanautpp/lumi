@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { desafios } from './utils/desafios.js';
+import { desafios, escolherDesafioPorCategoria } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memoria.js';
 import { gerarPdfRelatorio } from './utils/pdf.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
@@ -10,6 +10,7 @@ import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel } from './utils/niveis.js';
 import { validarResposta } from './utils/validacao.js';
+import { obterDesafioDoDia } from './utils/rotinaSemanal.js'; // NOVO
 import cron from 'node-cron';
 import { gerarRespostaIA } from './utils/ia.js';
 
@@ -39,6 +40,17 @@ app.post('/webhook', async (req, res) => {
     }
 
     if (acertou) delete desafiosPendentes[from];
+  } else if (
+    texto.toLowerCase().includes("quero") ||
+    texto.toLowerCase().includes("desafio") ||
+    texto.toLowerCase().includes("pode mandar")
+  ) {
+    const desafioHoje = obterDesafioDoDia();
+    const desafio = escolherDesafioPorCategoria(desafioHoje.categoria, desafioHoje.dificuldade);
+    desafiosPendentes[from] = desafio;
+
+    const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.pergunta}`;
+    await enviarMensagemWhatsApp(from, mensagem);
   } else {
     const resposta = await gerarRespostaIA(texto);
     await enviarMensagemWhatsApp(from, resposta);
