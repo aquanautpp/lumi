@@ -1,5 +1,3 @@
-// index.js (versão restaurada, com melhorias e API oficial do WhatsApp via Meta)
-
 import express from 'express';
 import OpenAI from 'openai';
 import fetch from 'node-fetch';
@@ -7,42 +5,32 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { generatePdfReport } from './utils/pdfReport.js';
+import twilio from 'twilio';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Para payloads do Twilio
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const FROM_PHONE = process.env.FROM_PHONE;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'lumi123';
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-const userProgress = {}; // salva progresso temporário por número
-
+const userProgress = {};
 const desafios = {
   matematica: [
-    {
-      enunciado: 'Se você tem 8 balas e dá 3 para seu amigo, com quantas fica?',
-      resposta: '5'
-    },
-    {
-      enunciado: 'Quanto é 7 x 6?',
-      resposta: '42'
-    }
+    { enunciado: 'Se você tem 8 balas e dá 3 para seu amigo, com quantas fica?', resposta: '5' },
+    { enunciado: 'Quanto é 7 x 6?', resposta: '42' }
   ],
   logica: [
-    {
-      enunciado: 'Sou par e maior que 10, mas menor que 14. Quem sou eu?',
-      resposta: '12'
-    }
+    { enunciado: 'Sou par e maior que 10, mas menor que 14. Quem sou eu?', resposta: '12' }
   ],
   portugues: [
-    {
-      enunciado: 'Qual é o plural de "cão"?',
-      resposta: 'cães'
-    }
+    { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães' }
   ]
 };
 
@@ -54,9 +42,7 @@ function escolherDesafioAleatorio() {
 }
 
 function fraseMotivacional(acertou) {
-  return acertou
-    ? 'Mandou bem! Isso é pensar com lógica 🎯'
-    : 'Quase! Vamos tentar de novo juntos? 💡';
+  return acertou ? 'Mandou bem! Isso é pensar com lógica 🎯' : 'Quase! Vamos tentar de novo juntos? 💡';
 }
 
 function salvarProgresso(numero, categoria, acertou) {
@@ -80,9 +66,45 @@ async function enviarMensagemWhatsApp(to, mensagem) {
   });
 }
 
-const desafiosPendentes = {}; // por número
+async function enviarMensagemTwilio(to, mensagem) {
+  await twilioClient.messages.create({
+    from: 'whatsapp:+14155238886', // Número do Sandbox
+    body: mensagem,
+    to: `whatsapp:${to}`
+  });
+}
+
+const desafiosPendentes = {};
 
 app.post('/webhook', async (req, res) => {
+  // Suporte ao Twilio (testes no Sandbox)
+  if (req.body.Body && req.body.From) {
+    const from = req.body.From.replace('whatsapp:', '');
+    const texto = req.body.Body.toLowerCase();
+    console.log(`📩 Twilio Webhook: ${texto} de ${from}`);
+
+    if (texto.includes('quem criou') || texto.includes('criador')) {
+      await enviarMensagemTwilio(from, 'Fui criada por Victor Pires! 💡');
+      return res.sendStatus(200);
+    }
+
+    if (desafiosPendentes[from]) {
+      const esperado = desafiosPendentes[from];
+      const acertou = texto.trim() === esperado.resposta;
+      const feedback = fraseMotivacional(acertou);
+      await enviarMensagemTwilio(from, feedback);
+      salvarProgresso(from, esperado.categoria, acertou);
+      delete desafiosPendentes[from];
+      return res.sendStatus(200);
+    }
+
+    const { categoria, enunciado, resposta } = escolherDesafioAleatorio();
+    desafiosPendentes[from] = { categoria, resposta };
+    await enviarMensagemTwilio(from, `Desafio de ${categoria}: ${enunciado}`);
+    return res.sendStatus(200);
+  }
+
+  // Lógica para Meta API
   const body = req.body;
   if (!body?.entry?.[0]?.changes?.[0]?.value?.messages) return res.sendStatus(200);
 
@@ -90,7 +112,7 @@ app.post('/webhook', async (req, res) => {
   const from = message.from;
   const texto = message.text?.body?.toLowerCase() || '';
 
-  console.log(`📩 Webhook recebeu: ${texto} de ${from}`);
+  console.log(`📩 Meta Webhook: ${texto} de ${from}`);
 
   if (texto.includes('quem criou') || texto.includes('criador')) {
     await enviarMensagemWhatsApp(from, 'Fui criada por Victor Pires! 💡');
