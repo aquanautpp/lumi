@@ -1,16 +1,14 @@
-// utils/whatsapp.js
 import axios from 'axios';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
-const token = process.env.WHATSAPP_TOKEN;
-const phoneId = process.env.WHATSAPP_PHONE_ID;
+const TOKEN = process.env.WHATSAPP_TOKEN;
+const PHONE_ID = process.env.PHONE_ID;
 
-export async function enviarMensagemWhatsApp(numero, mensagem) {
+async function enviarMensagemWhatsApp(numero, mensagem) {
   try {
-    await axios.post(
-      `https://graph.facebook.com/v19.0/${phoneId}/messages`,
+    const resposta = await axios.post(
+      `https://graph.facebook.com/v18.0/${PHONE_ID}/messages`,
       {
         messaging_product: 'whatsapp',
         to: numero,
@@ -19,13 +17,38 @@ export async function enviarMensagemWhatsApp(numero, mensagem) {
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${TOKEN}`
         }
       }
     );
-    console.log(`Mensagem enviada para ${numero}`);
+    return resposta.data;
   } catch (erro) {
     console.error('Erro ao enviar mensagem:', erro.response?.data || erro.message);
   }
 }
+
+async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
+  try {
+    const resposta = await axios.post(
+      `https://graph.facebook.com/v18.0/${PHONE_ID}/messages`,
+      {
+        messaging_product: 'whatsapp',
+        to: numero,
+        type: tipo,
+        [tipo]: {
+          link: urlArquivo
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${TOKEN}`
+        }
+      }
+    );
+    return resposta.data;
+  } catch (erro) {
+    console.error('Erro ao enviar mídia:', erro.response?.data || erro.message);
+  }
+}
+
+export { enviarMensagemWhatsApp, enviarMidiaWhatsApp };
