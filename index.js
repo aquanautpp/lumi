@@ -11,6 +11,7 @@ import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel } from './utils/niveis.js';
 import { validarResposta } from './utils/validacao.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
+import gerarPDF from './utils/pdf.js';
 import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
