@@ -5,10 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-
-// Comentei a importação do pdfReport.js, já que não é usado
-// Descomente se precisar gerar relatórios PDF
-// import { generatePdfReport } from './utils/pdfReport.js';
+import { generatePdfReport } from './utils/pdfReport.js';
 
 // Carrega variáveis do .env
 dotenv.config();
@@ -133,7 +130,7 @@ app.post('/webhook', async (req, res) => {
     });
 
     const textoGerado = respostaAI.choices[0].message.content.trim();
-    const final = `${textoGerado}\n\nQuer um desafio? É só dizer "quero um desafio!"`;
+    const final = `${textoGerado}\n\nAqui vai um desafio de ${categoria}: ${enunciado}`;
     await enviarMensagemWhatsApp(from, final);
   } catch (err) {
     console.error('❌ Erro com o GPT:', err);
@@ -154,6 +151,30 @@ app.get('/webhook', (req, res) => {
     res.status(200).send(challenge);
   } else {
     res.status(403).send('Verificação falhou');
+  }
+});
+
+// Endpoint para gerar relatório em PDF
+app.get('/relatorio/:numero', async (req, res) => {
+  const numero = req.params.numero;
+  const nome = 'Aluno Teste'; // Substitua por dados reais
+  const progresso = userProgress[numero] || [];
+  const caminho = path.join(__dirname, `relatorio-${numero}.pdf`);
+
+  try {
+    generatePdfReport({ nome, numero, progresso, caminho });
+    res.download(caminho, `relatorio-${numero}.pdf`, (err) => {
+      if (err) {
+        console.error('❌ Erro ao enviar PDF:', err);
+      }
+      // Remove o arquivo após o download (opcional, já que o disco do Render é efêmero)
+      fs.unlink(caminho, (unlinkErr) => {
+        if (unlinkErr) console.error('❌ Erro ao deletar PDF:', unlinkErr);
+      });
+    });
+  } catch (err) {
+    console.error('❌ Erro ao gerar relatório:', err);
+    res.status(500).send('Erro ao gerar relatório');
   }
 });
 
