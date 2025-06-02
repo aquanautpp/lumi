@@ -7,14 +7,14 @@ import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memor
 import { gerarPdfRelatorio } from './utils/pdf.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
-import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel } from './utils/niveis.js';
 import { validarResposta } from './utils/validacao.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
-import cron from 'node-cron';
+import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
+import cron from 'node-cron';
 
 dotenv.config();
 
@@ -28,6 +28,7 @@ app.post('/webhook', async (req, res) => {
   const { from, texto } = req.body;
   const desafioPendente = desafiosPendentes[from];
 
+  // Verifica se é uma resposta do teste de estilo
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
 
@@ -41,7 +42,7 @@ app.post('/webhook', async (req, res) => {
     await aplicarPerguntaEstilo(from);
     return res.sendStatus(200);
   }
-  
+
   if (desafioPendente) {
     const acertou = validarResposta(texto, desafioPendente.resposta, desafioPendente.sinonimos || []);
     atualizarMemoria(from, desafioPendente.categoria, acertou, texto, desafioPendente.resposta);
@@ -88,7 +89,7 @@ cron.schedule('0 9 * * 0', async () => {
     const url = await uploadPdfToCloudinary(caminho);
     await enviarMidiaWhatsApp(numero, 'document', url);
 
-    // Mensagem de saudade do mascote
+    // Fala do mascote sobre saudade
     const falaMascote = getFala('ausencia');
     await enviarMensagemWhatsApp(numero, falaMascote);
   }
@@ -100,7 +101,7 @@ cron.schedule('0 10 * * 0', () => {
     { enunciado: 'Cada um deve dizer um número. Quem disser o maior ganha!', tipo: 'cinestesico' }
   ];
   for (const numero of Object.keys(memoriaUsuarios)) {
-    const desafio = desafiosFamilia[0]; // ou aleatório no futuro
+    const desafio = desafiosFamilia[0];
     enviarMensagemWhatsApp(numero, `🌟 Desafio em família: ${desafio.enunciado}`);
   }
 });
