@@ -27,4 +27,4 @@ function definirNivel(estrelas) {
 }
 
 export { verificarNivel, definirNivel };
-feat: adiciona sistema de níveis e recompensas
+// feat: adiciona sistema de níveis e recompensas
