@@ -4,8 +4,6 @@ import fs from 'fs';
 export function generatePdfReport({ nome, numero, progresso = [], caminho }) {
   try {
     const doc = new PDFDocument({ margin: 50 });
-
-    // Nota: No Render, o disco é efêmero; o arquivo será apagado após reinicializações
     doc.pipe(fs.createWriteStream(caminho));
 
     // Cabeçalho
@@ -19,25 +17,37 @@ export function generatePdfReport({ nome, numero, progresso = [], caminho }) {
       .text(`Número: ${numero || 'Não informado'}`)
       .moveDown();
 
-    // Desempenho
-    doc.fontSize(16).text('📊 Desempenho nos desafios:', { underline: true }).moveDown(0.5);
+    // Nível e estrelas
+    const estrelas = progresso.filter(p => p.acertou).length;
+    const nivel = Math.floor(estrelas / 5) + 1;
+    doc.fontSize(16).text(`🌟 Nível atual: ${nivel} (${estrelas} estrelas acumuladas)`);
+
+    // Estilo de aprendizagem dominante
+    const estilos = { visual: 0, auditivo: 0, narrativo: 0, cinestesico: 0 };
+    progresso.forEach(p => {
+      if (p.acertou && p.tipoDesafio && estilos[p.tipoDesafio] !== undefined) {
+        estilos[p.tipoDesafio]++;
+      }
+    });
+    const estiloDominante = Object.entries(estilos).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const estiloTexto = estiloDominante
+      ? `🧠 Estilo de aprendizagem mais forte: ${estiloDominante}`
+      : '🧠 Estilo de aprendizagem ainda em análise';
+    doc.moveDown().fontSize(14).text(estiloTexto);
+
+    doc.moveDown().fontSize(16).text('📊 Desempenho nos desafios:', { underline: true }).moveDown(0.5);
 
     if (progresso.length === 0) {
       doc.fontSize(12).text('Nenhum desafio registrado nesta semana.');
     } else {
       progresso.forEach((item, i) => {
         const categoria = item.categoria || 'Indefinida';
-        // Ajuste para progresso do index.js, que não tem acertos/erros separados
-        const resultado = item.acertou ? 'Acertou ✅' : 'Não acertou ❌';
-        doc.fontSize(12).text(
-          `${i + 1}. Categoria: ${categoria} | Resultado: ${resultado}`
-        );
+        const resultado = item.acertou ? '✅ Acertou' : '❌ Errou';
+        doc.fontSize(12).text(`${i + 1}. Categoria: ${categoria} | Resultado: ${resultado}`);
       });
     }
 
     doc.moveDown(2);
-
-    // Encerramento
     doc.fontSize(12).text(
       'Continue incentivando o aprendizado com carinho e curiosidade! Até a próxima semana. ✨',
       { align: 'center' }
