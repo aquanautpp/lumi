@@ -26,20 +26,20 @@ const FROM_PHONE_ID = process.env.FROM_PHONE_ID;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'lumi123';
 
 // Estado em memória
-const userProgress = {};
+const memoriaUsuarios = {}; // chave: número; valor: dados de progresso
 const desafiosPendentes = {};
 
 // Desafios disponíveis
 const desafios = {
   matematica: [
-    { enunciado: 'Se você tem 8 balas e dá 3 para seu amigo, com quantas fica?', resposta: '5' },
-    { enunciado: 'Quanto é 7 x 6?', resposta: '42' }
+    { enunciado: 'Se você tem 8 balas e dá 3 para seu amigo, com quantas fica?', resposta: '5', tipo: 'visual' },
+    { enunciado: 'Quanto é 7 x 6?', resposta: '42', tipo: 'narrativo' }
   ],
   logica: [
-    { enunciado: 'Sou par e maior que 10, mas menor que 14. Quem sou eu?', resposta: '12' }
+    { enunciado: 'Sou par e maior que 10, mas menor que 14. Quem sou eu?', resposta: '12', tipo: 'cinestesico' }
   ],
   portugues: [
-    { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães' }
+    { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães', tipo: 'auditivo' }
   ]
 };
 
@@ -57,9 +57,51 @@ function fraseMotivacional(acertou) {
     : 'Quase! Vamos tentar de novo juntos? 💡';
 }
 
-function salvarProgresso(numero, categoria, acertou) {
-  if (!userProgress[numero]) userProgress[numero] = [];
-  userProgress[numero].push({ categoria, acertou, data: new Date() });
+function atualizarMemoria(numero, categoria, acertou, tipoDesafio = 'geral') {
+  if (!memoriaUsuarios[numero]) {
+    memoriaUsuarios[numero] = {
+      nome: null,
+      estrelas: 0,
+      estilo: {
+        visual: 0,
+        auditivo: 0,
+        narrativo: 0,
+        cinestesico: 0
+      },
+      categorias: {},
+      historico: []
+    };
+  }
+
+  const user = memoriaUsuarios[numero];
+
+  // Atualiza estrelas
+  if (acertou) user.estrelas += 1;
+
+  // Atualiza categorias
+  if (!user.categorias[categoria]) {
+    user.categorias[categoria] = { acertos: 0, erros: 0 };
+  }
+
+  if (acertou) {
+    user.categorias[categoria].acertos++;
+  } else {
+    user.categorias[categoria].erros++;
+  }
+
+  // Atualiza estilo de aprendizagem
+  if (tipoDesafio && user.estilo[tipoDesafio] !== undefined) {
+    if (acertou) user.estilo[tipoDesafio]++;
+    else user.estilo[tipoDesafio] = Math.max(user.estilo[tipoDesafio] - 1, 0);
+  }
+
+  // Salva no histórico
+  user.historico.push({
+    data: new Date().toISOString(),
+    categoria,
+    acertou,
+    tipoDesafio
+  });
 }
 
 // Envio de mensagens via API do WhatsApp (Meta)
@@ -104,20 +146,37 @@ app.post('/webhook', async (req, res) => {
     return res.sendStatus(200);
   }
 
+  // Consultar progresso
+  if (texto.includes('meu progresso')) {
+    const user = memoriaUsuarios[from];
+    if (!user) {
+      await enviarMensagemWhatsApp(from, 'Ainda não registrei nenhum progresso seu!');
+    } else {
+      const estrelas = user.estrelas;
+      const resumo = Object.entries(user.categorias)
+        .map(([cat, val]) => `${cat}: ✅${val.acertos} ❌${val.erros}`)
+        .join('\n');
+
+      await enviarMensagemWhatsApp(from,
+        `⭐ Você acumulou ${estrelas} estrelas!\n\n📊 Seu desempenho:\n${resumo}`);
+    }
+    return res.sendStatus(200);
+  }
+
   // Verificação de desafio pendente
   if (desafiosPendentes[from]) {
     const esperado = desafiosPendentes[from];
     const acertou = texto.trim() === esperado.resposta;
     const feedback = fraseMotivacional(acertou);
     await enviarMensagemWhatsApp(from, feedback);
-    salvarProgresso(from, esperado.categoria, acertou);
+    atualizarMemoria(from, esperado.categoria, acertou, esperado.tipo || 'geral');
     delete desafiosPendentes[from];
     return res.sendStatus(200);
   }
 
   // Início de nova interação + desafio
-  const { categoria, enunciado, resposta } = escolherDesafioAleatorio();
-  desafiosPendentes[from] = { categoria, resposta };
+  const { categoria, enunciado, resposta, tipo } = escolherDesafioAleatorio();
+  desafiosPendentes[from] = { categoria, resposta, tipo };
 
   const prompt = `Você é a Lumi, tutora virtual. A criança disse: "${texto}". Responda de forma simples, divertida e clara, e termine com uma pergunta para engajar.`;
 
@@ -157,8 +216,8 @@ app.get('/webhook', (req, res) => {
 // Endpoint para gerar relatório em PDF
 app.get('/relatorio/:numero', async (req, res) => {
   const numero = req.params.numero;
-  const nome = 'Aluno Teste'; // Substitua por dados reais
-  const progresso = userProgress[numero] || [];
+  const nome = memoriaUsuarios[numero]?.nome || 'Aluno Teste';
+  const progresso = memoriaUsuarios[numero]?.historico || [];
   const caminho = path.join(__dirname, `relatorio-${numero}.pdf`);
 
   try {
