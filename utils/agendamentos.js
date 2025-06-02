@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { enviarMensagemWhatsApp } from './mensagem.js';
 import { enviarMidiaWhatsApp } from './midia.js';
 import { generatePdfReport } from './pdfReport.js';
-import { uploadPdfToServer } from './pdfReport.js';
+import { uploadPdfToServer } from './upload.js';
 import { memoriaUsuarios } from './memoria.js';
 
 const desafiosFamilia = [
