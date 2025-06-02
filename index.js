@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
 import { desafios, escolherDesafioPorCategoria } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memoria.js';
-import { generatePdfReport } from './utils/pdf.js';
+import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
