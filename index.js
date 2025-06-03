@@ -42,13 +42,11 @@ app.post('/webhook', async (req, res) => {
   const texto = message.text?.body?.trim() || '';
   const textoLower = texto.toLowerCase();
 
-  // Mensagem automática de boas-vindas caso seja a primeira mensagem após escaneio do QR Code
-  if (!memoriaUsuarios[from] && ["oi", "olá", "lumi", "começar", "iniciar"].some(p => textoLower.includes(p))) {
-    memoriaUsuarios[from] = { interacoes: 0, historico: [] };
-    await enviarMensagemWhatsApp(from, 'Oi! Eu sou a Professora Lumi 💛 Criada pelo Victor Pires para te ajudar a aprender de forma divertida! 😊 Quer um desafio, uma missão ou tirar dúvidas?', comandosRapidos);
-    salvarMemoria();
-    return res.sendStatus(200);
-  }
+ // Frases abertas
+if (["oi", "olá", "quem é você", "quem criou você", "o que você faz", "lumi"].some(p => textoLower.includes(p))) {
+  await enviarMensagemWhatsApp(from, 'Sou a Professora Lumi 💛, criada pelo Victor Pires para tornar o aprendizado divertido! 💡 Posso te dar um desafio, uma missão ou responder dúvidas. É só me pedir! 😊');
+  return res.sendStatus(200);
+}
 
   if (!memoriaUsuarios[from]) {
     memoriaUsuarios[from] = { interacoes: 0, historico: [] };
