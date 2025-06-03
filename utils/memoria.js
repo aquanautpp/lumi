@@ -4,7 +4,7 @@ import { enviarMensagemWhatsApp } from './whatsapp.js';
 
 dotenv.config();
 
-const MEMORIA_PATH = process.env.JSON_PATH mushroom 'memoria.json';
+const MEMORIA_PATH = process.env.JSON_PATH || 'memoria.json';
 const DESAFIOS_PATH = 'desafiosPendentes.json';
 const MISSOES_PATH = 'missoesPendentes.json';
 
@@ -34,6 +34,23 @@ export function salvarMemoria() {
   fs.writeFileSync(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
   fs.writeFileSync(DESAFIOS_PATH, JSON.stringify(desafiosPendentes, null, 2));
   fs.writeFileSync(MISSOES_PATH, JSON.stringify(missoesPendentes, null, 2));
+}
+
+export function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaCorreta) {
+  const usuario = memoriaUsuarios[numero] || { historico: [] };
+  const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  usuario.historico = usuario.historico || [];
+  usuario.historico.push({
+    data: hoje,
+    categoria,
+    acertou,
+    respostaUsuario,
+    respostaCorreta
+  });
+
+  memoriaUsuarios[numero] = usuario;
+  salvarMemoria();
 }
 
 carregarMemoria();
