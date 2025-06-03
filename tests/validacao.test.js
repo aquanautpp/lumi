@@ -12,4 +12,9 @@ describe('validarResposta', () => {
     expect(validarResposta('Feliz', 'alegre', sinonimos)).toBe(true);
     expect(validarResposta('triste', 'alegre', sinonimos)).toBe(false);
   });
+
+  test('numeric words', () => {
+    expect(validarResposta('zero', '0')).toBe(true);
+    expect(validarResposta('sete', '7')).toBe(true);
+  });
 });
