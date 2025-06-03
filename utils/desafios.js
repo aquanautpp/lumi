@@ -49,13 +49,12 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo) {
   if (filtrados.length > 0) {
     return filtrados[Math.floor(Math.random() * filtrados.length)];
   } else {
-    // Fallback: seleciona um desafio aleatório da categoria
     return lista[Math.floor(Math.random() * lista.length)];
   }
 }
-export function escolherDesafioPorCategoria(categoria, tipo) {
+
+export function escolherDesafioPorCategoria(categoria) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  const filtrados = lista.filter(d => !tipo || d.tipo === tipo);
-  return filtrados[Math.floor(Math.random() * filtrados.length)];
+  return lista[Math.floor(Math.random() * lista.length)];
 }
