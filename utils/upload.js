@@ -5,15 +5,15 @@ import path from 'path';
 dotenv.config();
 
 cloudinary.config({
-  cloud_name: 'dhcjegidn',
-  api_key: '177781556747589',
-  api_secret: 'oQUUi8iNmO45-QWNESmLl616mqs'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 async function uploadPdfToServer(caminhoLocal) {
   try {
     const result = await cloudinary.uploader.upload(caminhoLocal, {
-      resource_type: 'raw', // importante para arquivos PDF
+      resource_type: 'raw',
       folder: 'lumi-pdfs'
     });
     console.log(`✅ PDF enviado para Cloudinary: ${result.secure_url}`);
