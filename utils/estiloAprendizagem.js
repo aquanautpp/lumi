@@ -1,5 +1,4 @@
-// utils/estiloAprendizagem.js
-
+// utils/estiloAprendizagem.js ATUALIZADO – corrige repetição e conclusões
 import { memoriaUsuarios, salvarMemoria } from './memoria.js';
 import { enviarMensagemWhatsApp } from './whatsapp.js';
 
@@ -14,32 +13,28 @@ const perguntasEstilo = [
 
 export async function aplicarPerguntaEstilo(numero) {
   const usuario = memoriaUsuarios[numero];
-
   if (!usuario) return;
 
   usuario.estilo = usuario.estilo || { respostas: {}, concluido: false };
+  const respondidas = Object.keys(usuario.estilo.respostas).length;
 
-  const totalRespostas = Object.keys(usuario.estilo.respostas).length;
-
-  if (usuario.estilo.concluido || totalRespostas >= perguntasEstilo.length) {
-    return;
-  }
+  if (usuario.estilo.concluido || respondidas >= perguntasEstilo.length) return;
 
   const proxima = perguntasEstilo.find(p => !(p.id in usuario.estilo.respostas));
   if (proxima) {
-    await enviarMensagemWhatsApp(numero, `👩‍🏫 Perguntinha rápida!\n${proxima.texto}\n\nResponda com SIM ou NÃO 😉`);
     usuario.estilo.perguntaAtual = proxima.id;
     salvarMemoria();
+    await enviarMensagemWhatsApp(numero, `👩‍🏫 Perguntinha rápida!
+${proxima.texto}\n\nResponda com SIM ou NÃO 😉`);
   }
 }
 
 export async function processarRespostaEstilo(numero, texto) {
   const usuario = memoriaUsuarios[numero];
-  if (!usuario || !usuario.estilo || usuario.estilo.concluido) return false;
+  if (!usuario?.estilo || usuario.estilo.concluido) return false;
 
   const id = usuario.estilo.perguntaAtual;
   const resposta = texto.trim().toLowerCase();
-
   if (!id || !["sim", "não", "nao"].includes(resposta)) return false;
 
   const pergunta = perguntasEstilo.find(p => p.id === id);
@@ -50,13 +45,12 @@ export async function processarRespostaEstilo(numero, texto) {
   }
 
   delete usuario.estilo.perguntaAtual;
+  const total = Object.values(usuario.estilo.respostas).reduce((a, b) => a + b, 0);
 
-  const totalRespondidas = Object.keys(usuario.estilo.respostas).reduce((acc, estilo) => acc + usuario.estilo.respostas[estilo], 0);
-
-  if (totalRespondidas >= 3 && Object.keys(usuario.estilo.respostas).length >= 2) {
+  if (total >= 3) {
     const estiloDominante = Object.entries(usuario.estilo.respostas).sort((a, b) => b[1] - a[1])[0][0];
-    usuario.estilo.concluido = true;
     usuario.estilo.tipo = estiloDominante;
+    usuario.estilo.concluido = true;
 
     const mensagens = {
       visual: "🌈 Você tem um jeitinho *visual* de aprender! Vou usar mais desenhos e desafios com imagens pra te ajudar!",
@@ -65,7 +59,8 @@ export async function processarRespostaEstilo(numero, texto) {
       narrativo: "📚 Você é apaixonado por histórias! Vou contar aventuras enquanto ensinamos juntos!"
     };
 
-    await enviarMensagemWhatsApp(numero, `✨ Descobri algo sobre você!\n${mensagens[estiloDominante]}`);
+    await enviarMensagemWhatsApp(numero, `✨ Descobri algo sobre você!
+${mensagens[estiloDominante]}`);
   } else {
     await aplicarPerguntaEstilo(numero);
   }
