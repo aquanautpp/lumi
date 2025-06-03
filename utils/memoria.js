@@ -1,16 +1,15 @@
 import fs from 'fs';
 import dotenv from 'dotenv';
+import { enviarMensagemWhatsApp } from './whatsapp.js';
 
 dotenv.config();
 
 const MEMORIA_PATH = process.env.JSON_PATH || 'memoria.json';
 const DESAFIOS_PATH = 'desafiosPendentes.json';
 
-// Objetos exportáveis (referência será mantida)
-const memoriaUsuarios = {};
-const desafiosPendentes = {};
+export const memoriaUsuarios = {};
+export const desafiosPendentes = {};
 
-// Carregar memória do disco
 function carregarMemoria() {
   if (fs.existsSync(MEMORIA_PATH)) {
     const dados = JSON.parse(fs.readFileSync(MEMORIA_PATH));
@@ -24,13 +23,19 @@ function carregarMemoria() {
   }
 }
 
-// Salvar memória no disco
-function salvarMemoria() {
+export function salvarMemoria() {
   fs.writeFileSync(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
   fs.writeFileSync(DESAFIOS_PATH, JSON.stringify(desafiosPendentes, null, 2));
 }
 
-// Executa o carregamento imediatamente
 carregarMemoria();
 
-export { memoriaUsuarios, desafiosPendentes, salvarMemoria };
+export async function alternarModoSussurro(numero, ativar) {
+  if (!memoriaUsuarios[numero]) {
+    memoriaUsuarios[numero] = {};
+  }
+  memoriaUsuarios[numero].modoSussurro = ativar;
+  salvarMemoria();
+  const status = ativar ? "ativado" : "desativado";
+  await enviarMensagemWhatsApp(numero, `Modo sussurro ${status}.`);
+}
