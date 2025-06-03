@@ -1,7 +1,14 @@
 function validarResposta(respostaUsuario, respostaCorreta, sinonimos = []) {
-  const normalizar = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+  const normalizar = (str) => 
+        str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]|_/g, '')
+      .replace(/\s+/g, ' ');
 
-  const mapaNumeros = {
+    const mapaNumeros = {
     zero: '0',
     nenhum: '0',
     uma: '1',
