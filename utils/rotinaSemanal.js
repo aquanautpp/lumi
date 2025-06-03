@@ -1,5 +1,3 @@
-// utils/rotinaSemanal.js
-
 const desafiosPorDia = {
   domingo:    { categoria: "lógica", dificuldade: "fácil" },
   segunda:    { categoria: "multiplicação", dificuldade: "fácil" },
@@ -15,4 +13,4 @@ function obterDesafioDoDia() {
   return desafiosPorDia[diaAtual] || desafiosPorDia["segunda"];
 }
 
-module.exports = { obterDesafioDoDia };
+export { obterDesafioDoDia };
