@@ -18,7 +18,7 @@ function agendarEnvioRelatorios() {
       const caminho = `tmp/relatorio-${numero}.pdf`;
       generatePdfReport({ nome: usuario.nome || 'Aluno', numero, progresso: usuario.historico, caminho });
       const urlPdf = await uploadPdfToServer(caminho);
-      await enviarMidiaWhatsApp(numero, 'document', urlPdf);
+      await enviarMidiaWhatsApp(numero, urlPdf, 'document');
     }
   });
 }
