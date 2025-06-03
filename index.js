@@ -3,8 +3,8 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { desafios, selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria } from './utils/desafios.js';
-import { memoriaUsuarios, desafiosPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
+import { desafios, selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao } from './utils/desafios.js';
+import { memoriaUsuarios, desafiosPendentes, missoesPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
 import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
@@ -15,9 +15,6 @@ import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
-import { enviarJogoVisual } from './utils/jogosVisuais.js';
-import { enviarDesafioVidaReal } from './utils/desafiosVidaReal.js';
-import { enviarDesafioFamilia } from './utils/desafioFamilia.js';
 
 dotenv.config();
 
@@ -26,53 +23,109 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Endpoint para cápsula do tempo
-app.post('/capsula', async (req, res) => {
-  const { from, mensagem, dias } = req.body;
-  if (!from || !mensagem || !dias) return res.sendStatus(400);
-  if (!memoriaUsuarios[from]) memoriaUsuarios[from] = {};
-  memoriaUsuarios[from].capsula = {
-    mensagem,
-    dataReenvio: new Date(Date.now() + dias * 24 * 60 * 60 * 1000)
-  };
-  salvarMemoria();
-  await enviarMensagemWhatsApp(from, `🎁 Sua cápsula do tempo foi guardada! Você a receberá em ${dias} dias.`);
-  res.sendStatus(200);
-});
-
-// Cron job para enviar cápsulas do tempo
-cron.schedule('0 0 * * *', async () => {
-  const agora = new Date();
-  for (const [numero, usuario] of Object.entries(memoriaUsuarios)) {
-    if (usuario.capsula && new Date(usuario.capsula.dataReenvio) <= agora) {
-      await enviarMensagemWhatsApp(numero, `🎁 Sua cápsula do tempo chegou! Você disse: "${usuario.capsula.mensagem}"`);
-      delete usuario.capsula;
-      salvarMemoria();
-    }
-  }
-});
-
-// Cron job para enviar desafios da vida real a cada 2 dias às 9h
-cron.schedule('0 9 */2 * *', async () => {
-  for (const numero of Object.keys(memoriaUsuarios)) {
-    await enviarDesafioVidaReal(numero);
-  }
-});
-
-// Cron job para enviar desafios em família todo domingo às 10h
-cron.schedule('0 10 * * 0', async () => {
-  for (const numero of Object.keys(memoriaUsuarios)) {
-    await enviarDesafioFamilia(numero);
-  }
-});
-
-// Webhook da Meta
 app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
   const texto = message.text?.body || '';
+  const textoLower = texto.toLowerCase();
+
+  // Handle mission requests
+  if (textoLower.includes('quero a missão do dia') || textoLower.includes('qual é minha missão hoje?')) {
+    if (!missoesPendentes[from]) {
+      const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+      const missao = gerarMissao(estilo);
+      if (missao) {
+        missoesPendentes[from] = {
+          desafios: missao,
+          atual: 0
+        };
+        salvarMemoria();
+        const desafio = missao[0];
+        const mensagem = `🎯 *Missão do Dia* iniciada! Aqui vai seu primeiro desafio (${desafio.categoria}):\n\n🧠 ${desafio.enunciado}`;
+        await enviarMensagemWhatsApp(from, mensagem);
+        if (desafio.midia) {
+          await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo === 'image' ? 'image' : 'video');
+        }
+      } else {
+        await enviarMensagemWhatsApp(from, 'Desculpe, não consegui criar uma missão agora. Tente novamente mais tarde!');
+      }
+    } else {
+      await enviarMensagemWhatsApp(from, 'Você já tem uma missão em andamento! Continue respondendo aos desafios.');
+    }
+    return res.sendStatus(200);
+  }
+
+  // Handle mission progress
+  if (missoesPendentes[from]) {
+    const missao = missoesPendentes[from];
+    const desafioAtual = missao.desafios[missao.atual];
+    const acertou = validarResposta(texto, desafioAtual.resposta, desafioAtual.sinonimos || []);
+
+    atualizarMemoria(from, desafioAtual.categoria, acertou, texto, desafioAtual.resposta);
+    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    const feedback = gerarFeedback(acertou, estilo);
+    await enviarMensagemWhatsApp(from, feedback);
+    if (!memoriaUsuarios[from]?.modoSussurro) {
+      const falaMascote = getFala(acertou ? 'acerto' : 'erro');
+      await enviarMensagemWhatsApp(from, falaMascote);
+    }
+
+    if (acertou) {
+      missao.atual += 1;
+      if (missao.atual < 3) {
+        const proximoDesafio = missao.desafios[missao.atual];
+        const mensagem = `🎉 Parabéns! Aqui vai o próximo desafio (${proximoDesafio.categoria}):\n\n🧠 ${proximoDesafio.enunciado}`;
+        await enviarMensagemWhatsApp(from, mensagem);
+        if (proximoDesafio.midia) {
+          await enviarMidiaWhatsApp(from, proximoDesafio.midia, proximoDesafio.tipo === 'image' ? 'image' : 'video');
+        }
+      } else {
+        await enviarMensagemWhatsApp(from, '🎉 Missão completa! Você é demais! Aqui vai um selo especial: 🥇✨');
+        const msgNivel = verificarNivel(memoriaUsuarios[from]);
+        if (msgNivel) {
+          await enviarMensagemWhatsApp(from, msgNivel);
+          if (!memoriaUsuarios[from]?.modoSussurro) {
+            await enviarMensagemWhatsApp(from, getFala('nivel'));
+          }
+        }
+        delete missoesPendentes[from];
+        salvarMemoria();
+      }
+    } else {
+      await enviarMensagemWhatsApp(from, '😊 Quase lá! Vamos tentar de novo? A missão foi reiniciada.');
+      const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+      const novaMissao = gerarMissao(estilo);
+      if (novaMissao) {
+        missoesPendentes[from] = {
+          desafios: novaMissao,
+          atual: 0
+        };
+        salvarMemoria();
+        const primeiroDesafio = novaMissao[0];
+        const mensagem = `🧠 Aqui vai seu primeiro desafio novamente (${primeiroDesafio.categoria}):\n\n${primeiroDesafio.enunciado}`;
+        await enviarMensagemWhatsApp(from, mensagem);
+        if (primeiroDesafio.midia) {
+          await enviarMidiaWhatsApp(from, primeiroDesafio.midia, primeiroDesafio.tipo === 'image' ? 'image' : 'video');
+        }
+      } else {
+        await enviarMensagemWhatsApp(from, 'Desculpe, não consegui criar uma nova missão. Tente novamente mais tarde!');
+        delete missoesPendentes[from];
+        salvarMemoria();
+      }
+    }
+    return res.sendStatus(200);
+  }
+
+  // Existing logic for normal challenges and other features
+  if (textoLower.includes('ativar modo sussurro')) {
+    await alternarModoSussurro(from, true);
+    return res.sendStatus(200);
+  } else if (textoLower.includes('desativar modo sussurro')) {
+    await alternarModoSussurro(from, false);
+    return res.sendStatus(200);
+  }
 
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
@@ -94,15 +147,18 @@ app.post('/webhook', async (req, res) => {
 
     const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
     const feedback = gerarFeedback(acertou, estilo);
-    const falaMascote = getFala(acertou ? 'acerto' : 'erro');
-
     await enviarMensagemWhatsApp(from, feedback);
-    await enviarMensagemWhatsApp(from, falaMascote);
+    if (!memoriaUsuarios[from]?.modoSussurro) {
+      const falaMascote = getFala(acertou ? 'acerto' : 'erro');
+      await enviarMensagemWhatsApp(from, falaMascote);
+    }
 
     const msgNivel = verificarNivel(memoriaUsuarios[from]);
     if (msgNivel) {
       await enviarMensagemWhatsApp(from, msgNivel);
-      await enviarMensagemWhatsApp(from, getFala('nivel'));
+      if (!memoriaUsuarios[from]?.modoSussurro) {
+        await enviarMensagemWhatsApp(from, getFala('nivel'));
+      }
     }
 
     delete desafiosPendentes[from];
@@ -110,7 +166,6 @@ app.post('/webhook', async (req, res) => {
     return res.sendStatus(200);
   }
 
-  const textoLower = texto.toLowerCase();
   if (textoLower.includes('quero') || textoLower.includes('desafio') || textoLower.includes('pode mandar')) {
     const desafioHoje = obterDesafioDoDia();
     const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
@@ -120,6 +175,9 @@ app.post('/webhook', async (req, res) => {
 
     const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.enunciado}`;
     await enviarMensagemWhatsApp(from, mensagem);
+    if (desafio.midia) {
+      await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo === 'image' ? 'image' : 'video');
+    }
     return res.sendStatus(200);
   }
 
@@ -139,6 +197,32 @@ app.get('/webhook', (req, res) => {
     res.status(200).send(challenge);
   } else {
     res.sendStatus(403);
+  }
+});
+
+cron.schedule('0 9 * * 0', async () => {
+  for (const numero of Object.keys(memoriaUsuarios)) {
+    const usuario = memoriaUsuarios[numero];
+    const caminho = `tmp/relatorio-${numero}.pdf`;
+
+    await generatePdfReport({
+      nome: usuario.nome || 'Aluno(a)',
+      numero,
+      progresso: usuario.historico,
+      caminho
+    });
+
+    const url = await uploadPdfToCloudinary(caminho);
+    await enviarMidiaWhatsApp(numero, url, 'document');
+
+    await enviarMensagemWhatsApp(numero, getFala('ausencia'));
+  }
+});
+
+cron.schedule('0 10 * * 0', () => {
+  const desafio = '🌟 Desafio em família: Cada um deve dizer um número. Quem disser o maior ganha!';
+  for (const numero of Object.keys(memoriaUsuarios)) {
+    enviarMensagemWhatsApp(numero, desafio);
   }
 });
 
