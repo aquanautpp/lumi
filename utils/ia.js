@@ -9,6 +9,12 @@ const openai = new OpenAI({
 
 async function gerarRespostaIA(prompt) {
   try {
+    // ✅ Validação de segurança
+    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+      console.warn('Prompt inválido para a IA:', prompt);
+      return 'Não entendi muito bem... pode tentar de outro jeito? 🤔';
+    }
+
     const resposta = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
