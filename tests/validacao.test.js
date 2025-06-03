@@ -7,14 +7,19 @@ describe('validarResposta', () => {
     expect(validarResposta('41', '42')).toBe(false);
   });
 
+  test('numeric words normalization', () => {
+    expect(validarResposta('dois', '2')).toBe(true);
+    expect(validarResposta('Três', '3')).toBe(true);
+  });
+
   test('synonym matching', () => {
     const sinonimos = ['feliz', 'contente'];
     expect(validarResposta('Feliz', 'alegre', sinonimos)).toBe(true);
     expect(validarResposta('triste', 'alegre', sinonimos)).toBe(false);
   });
 
-  test('numeric words', () => {
-    expect(validarResposta('zero', '0')).toBe(true);
-    expect(validarResposta('sete', '7')).toBe(true);
+  test('accent and punctuation handling', () => {
+    expect(validarResposta('São Paulo!', 'sao paulo')).toBe(true);
+    expect(validarResposta('banana?', 'banana')).toBe(true);
   });
 });
