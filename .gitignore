@@ -1,3 +1,4 @@
 .env
 mensagens_falhas.txt
 *.pdf
+node_modules/
