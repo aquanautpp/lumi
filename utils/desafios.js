@@ -1,4 +1,4 @@
-// utils/desafios.js ATUALIZADO – lógica simplificada para crianças 8–12 anos
+// utils/desafios.js – versão consolidada, com lógica simplificada para crianças e melhorias visuais
 
 export const desafios = {
   matematica: [
@@ -13,7 +13,12 @@ export const desafios = {
     { enunciado: '🟩🟨🟨 = 7. Quanto vale 🟩?', resposta: '3', tipo: 'visual' },
     { enunciado: '🐶🐶🐱 = 9. Se 🐱 = 3, quanto vale 🐶?', resposta: '3', tipo: 'visual' },
     { enunciado: '👟👟 + 🎒 = 5. Se 🎒 = 3, quanto vale 👟?', resposta: '1', tipo: 'visual' },
-    { enunciado: '🧠 João tem 2 pares de meias. Quantas meias ele tem?', resposta: '4', tipo: 'visual' }
+    { enunciado: 'João tem 2 pares de meias. Quantas meias ele tem?', resposta: '4', tipo: 'visual' },
+    {
+      enunciado: '🧠 Pedro vê 5 pássaros numa árvore. Ele atira em 1. Quantos pássaros continuam lá?',
+      resposta: '0',
+      tipo: 'narrativo'
+    }
   ],
   portugues: [
     { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães', tipo: 'visual' },
@@ -24,7 +29,8 @@ export const desafios = {
   charada: [
     { enunciado: '🍎 + 🍎 + 🍌 = 14. Quanto vale cada fruta?', resposta: 'maçã=5, banana=4', tipo: 'visual' },
     { enunciado: 'Tenho dentes mas não mordo. O que sou?', resposta: 'pente', tipo: 'auditivo' },
-    { enunciado: 'Sou alto quando jovem e baixo quando velho. O que sou?', resposta: 'vela', tipo: 'cinestesico' }
+    { enunciado: 'Sou alto quando jovem e baixo quando velho. O que sou?', resposta: 'vela', tipo: 'cinestesico' },
+    { enunciado: 'Qual é o animal que anda com uma pata?', resposta: 'pato', tipo: 'narrativo' }
   ],
   visual: [
     {
@@ -46,11 +52,9 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo) {
   const lista = desafios[categoria];
   if (!lista) return null;
   const filtrados = lista.filter(d => d.tipo === estilo);
-  if (filtrados.length > 0) {
-    return filtrados[Math.floor(Math.random() * filtrados.length)];
-  } else {
-    return lista[Math.floor(Math.random() * lista.length)];
-  }
+  return filtrados.length > 0
+    ? filtrados[Math.floor(Math.random() * filtrados.length)]
+    : lista[Math.floor(Math.random() * lista.length)];
 }
 
 export function escolherDesafioPorCategoria(categoria) {
@@ -61,18 +65,20 @@ export function escolherDesafioPorCategoria(categoria) {
 
 export function gerarMissao(estilo = null) {
   const categorias = ['matematica', 'logica', 'portugues'];
-  const missao = [];
   const usadas = new Set();
+  const missao = [];
 
   while (missao.length < 3 && categorias.length > 0) {
     const cat = categorias[Math.floor(Math.random() * categorias.length)];
     if (!usadas.has(cat)) {
-      const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(cat, estilo) : escolherDesafioPorCategoria(cat);
+      const desafio = estilo
+        ? selecionarDesafioPorCategoriaEEstilo(cat, estilo)
+        : escolherDesafioPorCategoria(cat);
       if (desafio) {
         missao.push(desafio);
         usadas.add(cat);
-        categorias.splice(categorias.indexOf(cat), 1);
       }
+      categorias.splice(categorias.indexOf(cat), 1);
     }
   }
 
