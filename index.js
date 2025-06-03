@@ -45,7 +45,7 @@ app.post('/webhook', async (req, res) => {
   // Caso ainda não exista memória, cria e envia mensagem inicial uma única vez
   if (!memoriaUsuarios[from]) {
     memoriaUsuarios[from] = { interacoes: 0, historico: [], mensagemBoasVindasEnviada: false };
-    await enviarMenuInicial(from);
+    await enviarBoasVindas(from);
     memoriaUsuarios[from].mensagemBoasVindasEnviada = true;
     salvarMemoria();
     return res.sendStatus(200);
@@ -56,7 +56,7 @@ app.post('/webhook', async (req, res) => {
 
   // Garante que a mensagem de boas-vindas só seja enviada uma única vez
   if (!usuario.mensagemBoasVindasEnviada) {
-    await enviarMenuInicial(from);
+    await enviarBoasVindas(from);
     usuario.mensagemBoasVindasEnviada = true;
     salvarMemoria();
     return res.sendStatus(200);
