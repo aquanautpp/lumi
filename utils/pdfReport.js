@@ -1,3 +1,4 @@
+// utils/pdfReport.js ATUALIZADO – inclui mascote, emojis e storytelling
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import { definirNivel } from './niveis.js';
@@ -7,7 +8,6 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
   doc.pipe(fs.createWriteStream(caminho));
 
   doc.rect(20, 20, 570, 750).stroke();
-
   doc
     .fontSize(20)
     .fillColor('purple')
@@ -56,6 +56,22 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
         .text(`${index + 1}. [${data}] ${resultado} - ${item.categoria}${respostaUsuario}${respostaCorreta}`);
     });
   }
+
+  doc.moveDown(1);
+  doc
+    .fontSize(14)
+    .fillColor('magenta')
+    .text('💡 Dica da Lumi:', { underline: true })
+    .moveDown(0.2)
+    .fontSize(12)
+    .fillColor('black')
+    .text('Tente revisar os desafios com erro e conversar com seu filho sobre como ele pensou nas respostas. Isso ajuda muito no aprendizado! 😊');
+
+  doc.moveDown(1);
+  doc
+    .fontSize(12)
+    .fillColor('gray')
+    .text('👩‍🏫 Com carinho, Professora Lumi 💜', { align: 'right' });
 
   doc.end();
 }
