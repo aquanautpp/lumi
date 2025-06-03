@@ -7,7 +7,7 @@ dotenv.config();
 const TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_ID = process.env.FROM_PHONE_ID;
 
-export async function enviarMensagemWhatsApp(numero, mensagem) {
+export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
   const usuario = memoriaUsuarios[numero];
   if (usuario && usuario.modoSussurro) {
     mensagem = "🤫 " + mensagem;
@@ -31,7 +31,14 @@ export async function enviarMensagemWhatsApp(numero, mensagem) {
     console.log(`Mensagem enviada para ${numero}: ${mensagem}`);
     return resposta.data;
   } catch (erro) {
-    console.error('Erro ao enviar mensagem:', erro.response?.data || erro.message);
+    const code = erro.response?.status;
+    if ((code >= 500 && code < 600 || erro.code === 'ECONNABORTED') && tentativa < 3) {
+      const atraso = 1000 * Math.pow(2, tentativa); // 2s, 4s, 8s
+      console.log(`🔁 Tentando novamente em ${atraso / 1000}s...`);
+      await new Promise(res => setTimeout(res, atraso));
+      return enviarMensagemWhatsApp(numero, mensagem, tentativa + 1);
+    }
+    console.error(`⚠️ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}:`, erro.response?.data || erro.message);
     throw erro;
   }
 }
