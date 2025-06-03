@@ -1,17 +1,19 @@
-// utils/whatsapp.js ATUALIZADO – inclui retry automático e log de falha
+// utils/whatsapp.js
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_ID = process.env.PHONE_ID;
+const PHONE_ID = process.env.PHONE_ID || process.env.FROM_PHONE_ID;
+const LOG_PATH = 'mensagens_falhas.txt';
 
 export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
   const usuario = memoriaUsuarios[numero];
-  if (usuario?.modoSussurro) mensagem = '🤫 ' + mensagem;
+  if (usuario?.modoSussurro) mensagem = "🤫 " + mensagem;
 
   try {
     const resposta = await axios.post(
@@ -26,22 +28,24 @@ export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
         headers: {
           Authorization: `Bearer ${TOKEN}`,
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 5000
       }
     );
-    console.log(`📤 Mensagem enviada para ${numero}: ${mensagem}`);
+    console.log(`✅ Mensagem enviada para ${numero}: ${mensagem}`);
     return resposta.data;
   } catch (erro) {
     const code = erro.response?.status;
-    const logMsg = `❌ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}: ${mensagem} – ${erro.response?.data?.error?.message || erro.message}`;
-    console.error(logMsg);
-    fs.appendFileSync('mensagens_falhas.txt', `\n[${new Date().toISOString()}] ${logMsg}`);
-
     if ((code >= 500 || erro.code === 'ECONNABORTED') && tentativa < 3) {
-      await new Promise(res => setTimeout(res, 2000 * tentativa));
+      const atraso = 1000 * Math.pow(2, tentativa); // 2s, 4s, 8s
+      console.log(`🔁 Tentando novamente em ${atraso / 1000}s...`);
+      await new Promise(res => setTimeout(res, atraso));
       return enviarMensagemWhatsApp(numero, mensagem, tentativa + 1);
     }
-    return null;
+    const log = `[${new Date().toISOString()}] Falha para ${numero}: ${mensagem} - Erro: ${erro.response?.data?.error?.message || erro.message}\n`;
+    fs.appendFileSync(LOG_PATH, log);
+    console.error(`❌ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}:`, erro.response?.data || erro.message);
+    throw erro;
   }
 }
 
@@ -53,9 +57,7 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
         messaging_product: 'whatsapp',
         to: numero,
         type: tipo,
-        [tipo]: {
-          link: urlArquivo
-        }
+        [tipo]: { link: urlArquivo }
       },
       {
         headers: {
@@ -64,10 +66,12 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
         }
       }
     );
-    console.log(`📤 Mídia enviada para ${numero}: ${urlArquivo}`);
+    console.log(`✅ Mídia enviada para ${numero}: ${urlArquivo}`);
     return resposta.data;
   } catch (erro) {
-    console.error(`❌ Erro ao enviar mídia para ${numero}:`, erro.response?.data || erro.message);
-    return null;
+    const log = `[${new Date().toISOString()}] Falha de mídia para ${numero}: ${urlArquivo} - Erro: ${erro.response?.data?.error?.message || erro.message}\n`;
+    fs.appendFileSync(LOG_PATH, log);
+    console.error('❌ Erro ao enviar mídia:', erro.response?.data || erro.message);
+    throw erro;
   }
 }
