@@ -30,8 +30,8 @@ const comandosRapidos = [
   { title: "❓Quem é você?", body: "Quem é você?" }
 ];
 
-function enviarMenuInicial(numero) {
-  return enviarMensagemWhatsApp(numero, 'Oi! Eu sou a Professora Lumi 💛 Sua tutora divertida para aprender brincando! O que você quer fazer hoje?', comandosRapidos);
+function enviarBoasVindas(numero) {
+  return enviarMensagemWhatsApp(numero, 'Oi, eu sou a Lumi 💛', comandosRapidos);
 }
 
 app.post('/webhook', async (req, res) => {
