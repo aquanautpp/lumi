@@ -1,6 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
+
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
@@ -22,13 +23,16 @@ export async function enviarMensagemWhatsApp(numero, mensagem) {
       },
       {
         headers: {
-          Authorization: `Bearer ${TOKEN}`
+          Authorization: `Bearer ${TOKEN}`,
+          'Content-Type': 'application/json'
         }
       }
     );
+    console.log(`Mensagem enviada para ${numero}: ${mensagem}`);
     return resposta.data;
   } catch (erro) {
     console.error('Erro ao enviar mensagem:', erro.response?.data || erro.message);
+    throw erro;
   }
 }
 
@@ -46,12 +50,15 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
       },
       {
         headers: {
-          Authorization: `Bearer ${TOKEN}`
+          Authorization: `Bearer ${TOKEN}`,
+          'Content-Type': 'application/json'
         }
       }
     );
+    console.log(`Mídia enviada para ${numero}: ${urlArquivo}`);
     return resposta.data;
   } catch (erro) {
     console.error('Erro ao enviar mídia:', erro.response?.data || erro.message);
+    throw erro;
   }
 }
