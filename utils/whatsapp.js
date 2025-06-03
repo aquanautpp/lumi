@@ -6,7 +6,7 @@ dotenv.config();
 const TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_ID = process.env.FROM_PHONE_ID;
 
-async function enviarMensagemWhatsApp(numero, mensagem) {
+export async function enviarMensagemWhatsApp(numero, mensagem) {
   const usuario = memoriaUsuarios[numero];
   if (usuario && usuario.modoSussurro) {
     mensagem = "🤫 " + mensagem;
@@ -32,7 +32,7 @@ async function enviarMensagemWhatsApp(numero, mensagem) {
   }
 }
 
-async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
+export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
   try {
     const resposta = await axios.post(
       `https://graph.facebook.com/v18.0/${PHONE_ID}/messages`,
@@ -55,5 +55,3 @@ async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
     console.error('Erro ao enviar mídia:', erro.response?.data || erro.message);
   }
 }
-
-export { enviarMensagemWhatsApp, enviarMidiaWhatsApp };
