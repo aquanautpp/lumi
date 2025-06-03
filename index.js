@@ -42,25 +42,35 @@ app.post('/webhook', async (req, res) => {
   const texto = message.text?.body?.trim() || '';
   const textoLower = texto.toLowerCase();
 
- // Frases abertas
-if (["oi", "olá", "quem é você", "quem criou você", "o que você faz", "lumi"].some(p => textoLower.includes(p))) {
-  await enviarMensagemWhatsApp(from, 'Sou a Professora Lumi 💛, criada pelo Victor Pires para tornar o aprendizado divertido! 💡 Posso te dar um desafio, uma missão ou responder dúvidas. É só me pedir! 😊');
-  return res.sendStatus(200);
-}
-
+  // Caso ainda não exista memória, cria e envia mensagem inicial uma única vez
   if (!memoriaUsuarios[from]) {
-    memoriaUsuarios[from] = { interacoes: 0, historico: [] };
+    memoriaUsuarios[from] = { interacoes: 0, historico: [], mensagemBoasVindasEnviada: false };
     await enviarMenuInicial(from);
+    memoriaUsuarios[from].mensagemBoasVindasEnviada = true;
     salvarMemoria();
+    return res.sendStatus(200);
+  }
+
+  const usuario = memoriaUsuarios[from];
+
+  // Garante que a mensagem de boas-vindas só seja enviada uma única vez
+  if (!usuario.mensagemBoasVindasEnviada) {
+    await enviarMenuInicial(from);
+    usuario.mensagemBoasVindasEnviada = true;
+    salvarMemoria();
+    return res.sendStatus(200);
+  }
+
+  // Frases abertas com menção ao criador só respondem se perguntarem explicitamente
+  if (["quem é você", "quem criou você", "criador", "foi criada", "de onde você veio"].some(p => textoLower.includes(p))) {
+    await enviarMensagemWhatsApp(from, 'Sou a Professora Lumi 💛! Estou sendo testada com carinho pelo Instituto Somos Luz e pelo IVAS, para tornar o aprendizado divertido! 💡');
     return res.sendStatus(200);
   }
 
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
 
-  const usuario = memoriaUsuarios[from];
   usuario.interacoes += 1;
-  memoriaUsuarios[from] = usuario;
   salvarMemoria();
 
   if (["parar", "cancelar", "sair"].includes(textoLower)) {
@@ -102,7 +112,7 @@ if (["oi", "olá", "quem é você", "quem criou você", "o que você faz", "lumi
     return res.sendStatus(200);
   }
 
-  if (["quero um desafio", "me dá um desafio", "desafio"].some(t => textoLower.includes(t))) {
+  if (["quero um desafio", "me dá um desafio", "desafio"].some(t => textoLower === t)) {
     const estilo = usuario.estilo?.tipo || null;
     const hoje = obterDesafioDoDia();
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo) : escolherDesafioPorCategoria(hoje.categoria);
@@ -131,11 +141,6 @@ ${desafio.enunciado}`);
     } else {
       await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
     }
-    return res.sendStatus(200);
-  }
-
-  if (["oi", "olá", "quem é você", "quem criou você", "o que você faz", "lumi"].some(p => textoLower.includes(p))) {
-    await enviarMensagemWhatsApp(from, 'Sou a Professora Lumi 💛, criada pelo Victor Pires para tornar o aprendizado divertido! 💡 Posso te dar um desafio, uma missão ou responder dúvidas. É só me pedir! 😊');
     return res.sendStatus(200);
   }
 
