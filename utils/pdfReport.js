@@ -6,17 +6,14 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
   const doc = new PDFDocument();
   doc.pipe(fs.createWriteStream(caminho));
 
-  // Borda
   doc.rect(20, 20, 570, 750).stroke();
 
-  // Cabeçalho
   doc
     .fontSize(20)
     .fillColor('purple')
     .text('📘 Relatório de Progresso - Professora Lumi 💜', { align: 'center' })
     .moveDown();
 
-  // Nome e número
   doc
     .fontSize(16)
     .fillColor('blue')
@@ -29,7 +26,6 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
     .text(`📱 Número: ${numero}`)
     .moveDown();
 
-  // Estrelas e nível
   const totalEstrelas = progresso.filter(p => p.acertou).length;
   const nivel = definirNivel(totalEstrelas);
 
@@ -40,7 +36,6 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
     .text(`🏆 Nível: ${nivel}`, { underline: true })
     .moveDown();
 
-  // Histórico
   doc
     .fontSize(16)
     .fillColor('purple')
@@ -53,13 +48,12 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
     progresso.slice(-10).reverse().forEach((item, index) => {
       const data = new Date(item.data).toLocaleString('pt-BR');
       const resultado = item.acertou ? '✅ Acertou' : '❌ Errou';
-      const estilo = item.tipoDesafio ? ` (${item.tipoDesafio})` : '';
       const respostaUsuario = item.respostaUsuario ? ` - Resposta: ${item.respostaUsuario}` : '';
       const respostaCorreta = item.respostaCorreta ? ` - Correta: ${item.respostaCorreta}` : '';
       doc
         .fontSize(12)
         .fillColor('black')
-        .text(`${index + 1}. [${data}] ${resultado} - ${item.categoria}${estilo}${respostaUsuario}${respostaCorreta}`);
+        .text(`${index + 1}. [${data}] ${resultado} - ${item.categoria}${respostaUsuario}${respostaCorreta}`);
     });
   }
 
