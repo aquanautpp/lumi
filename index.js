@@ -3,6 +3,9 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
 import { desafios, escolherDesafioPorCategoria } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memoria.js';
@@ -19,16 +22,15 @@ import { gerarRespostaIA } from './utils/ia.js';
 
 dotenv.config();
 
-import path from 'path';
-import { fileURLToPath } from 'url';
+const app = express(); // ✅ Agora o app é criado antes de ser usado
+const PORT = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ✅ Serve arquivos estáticos da pasta "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
-const app = express();
-const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 // 🔁 Endpoint alternativo para testes manuais via HTML ou Postman
