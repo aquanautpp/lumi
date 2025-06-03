@@ -18,6 +18,14 @@ import cron from 'node-cron';
 
 dotenv.config();
 
+// ✅ LOGS DE VERIFICAÇÃO DAS VARIÁVEIS
+console.log('✔️ ENV OPENAI:', !!process.env.OPENAI_API_KEY);
+console.log('✔️ ENV WHATSAPP:', !!process.env.WHATSAPP_TOKEN);
+console.log('✔️ ENV PHONE_ID:', process.env.PHONE_ID || process.env.FROM_PHONE_ID);
+console.log('✔️ ENV CLOUDINARY:', process.env.CLOUDINARY_CLOUD_NAME);
+
+import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
