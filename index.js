@@ -112,6 +112,20 @@ cron.schedule('0 10 * * 0', () => {
   }
 });
 
+app.get('/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('🔐 Webhook verificado com sucesso!');
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Lumi está rodando na porta ${PORT}`);
 });
