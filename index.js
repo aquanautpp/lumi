@@ -60,12 +60,14 @@ app.post('/webhook', async (req, res) => {
       await enviarMensagemWhatsApp(from, getFala('nivel'));
     }
 
-    if (acertou) delete desafiosPendentes[from];
-  } else if (
+} else if (
+  texto &&
+  (
     texto.toLowerCase().includes("quero") ||
     texto.toLowerCase().includes("desafio") ||
     texto.toLowerCase().includes("pode mandar")
-  ) {
+  )
+) {
     const desafioHoje = obterDesafioDoDia();
     const desafio = escolherDesafioPorCategoria(desafioHoje.categoria, desafioHoje.dificuldade);
     desafiosPendentes[from] = desafio;
