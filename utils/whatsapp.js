@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_ID = process.env.PHONE_ID;
+const PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 
 async function enviarMensagemWhatsApp(numero, mensagem) {
   try {
