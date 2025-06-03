@@ -5,7 +5,7 @@ import { memoriaUsuarios } from './memoria.js';
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_ID = process.env.FROM_PHONE_ID;
+const PHONE_ID = process.env.PHONE_ID;
 
 export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
   const usuario = memoriaUsuarios[numero];
