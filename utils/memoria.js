@@ -4,11 +4,13 @@ import { enviarMensagemWhatsApp } from './whatsapp.js';
 
 dotenv.config();
 
-const MEMORIA_PATH = process.env.JSON_PATH || 'memoria.json';
+const MEMORIA_PATH = process.env.JSON_PATH mushroom 'memoria.json';
 const DESAFIOS_PATH = 'desafiosPendentes.json';
+const MISSOES_PATH = 'missoesPendentes.json';
 
 export const memoriaUsuarios = {};
 export const desafiosPendentes = {};
+export const missoesPendentes = {};
 
 function carregarMemoria() {
   if (fs.existsSync(MEMORIA_PATH)) {
@@ -21,11 +23,17 @@ function carregarMemoria() {
     Object.assign(desafiosPendentes, desafios);
     console.log('✅ Desafios pendentes carregados.');
   }
+  if (fs.existsSync(MISSOES_PATH)) {
+    const missoes = JSON.parse(fs.readFileSync(MISSOES_PATH));
+    Object.assign(missoesPendentes, missoes);
+    console.log('✅ Missões pendentes carregadas.');
+  }
 }
 
 export function salvarMemoria() {
   fs.writeFileSync(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
   fs.writeFileSync(DESAFIOS_PATH, JSON.stringify(desafiosPendentes, null, 2));
+  fs.writeFileSync(MISSOES_PATH, JSON.stringify(missoesPendentes, null, 2));
 }
 
 carregarMemoria();
