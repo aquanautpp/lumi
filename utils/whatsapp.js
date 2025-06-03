@@ -1,6 +1,8 @@
+// utils/whatsapp.js ATUALIZADO – inclui retry automático e log de falha
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -9,9 +11,8 @@ const PHONE_ID = process.env.PHONE_ID;
 
 export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
   const usuario = memoriaUsuarios[numero];
-  if (usuario && usuario.modoSussurro) {
-    mensagem = "🤫 " + mensagem;
-  }
+  if (usuario?.modoSussurro) mensagem = '🤫 ' + mensagem;
+
   try {
     const resposta = await axios.post(
       `https://graph.facebook.com/v18.0/${PHONE_ID}/messages`,
@@ -28,18 +29,19 @@ export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
         }
       }
     );
-    console.log(`Mensagem enviada para ${numero}: ${mensagem}`);
+    console.log(`📤 Mensagem enviada para ${numero}: ${mensagem}`);
     return resposta.data;
   } catch (erro) {
     const code = erro.response?.status;
-    if ((code >= 500 && code < 600 || erro.code === 'ECONNABORTED') && tentativa < 3) {
-      const atraso = 1000 * Math.pow(2, tentativa); // 2s, 4s, 8s
-      console.log(`🔁 Tentando novamente em ${atraso / 1000}s...`);
-      await new Promise(res => setTimeout(res, atraso));
+    const logMsg = `❌ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}: ${mensagem} – ${erro.response?.data?.error?.message || erro.message}`;
+    console.error(logMsg);
+    fs.appendFileSync('mensagens_falhas.txt', `\n[${new Date().toISOString()}] ${logMsg}`);
+
+    if ((code >= 500 || erro.code === 'ECONNABORTED') && tentativa < 3) {
+      await new Promise(res => setTimeout(res, 2000 * tentativa));
       return enviarMensagemWhatsApp(numero, mensagem, tentativa + 1);
     }
-    console.error(`⚠️ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}:`, erro.response?.data || erro.message);
-    throw erro;
+    return null;
   }
 }
 
@@ -62,10 +64,10 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
         }
       }
     );
-    console.log(`Mídia enviada para ${numero}: ${urlArquivo}`);
+    console.log(`📤 Mídia enviada para ${numero}: ${urlArquivo}`);
     return resposta.data;
   } catch (erro) {
-    console.error('Erro ao enviar mídia:', erro.response?.data || erro.message);
-    throw erro;
+    console.error(`❌ Erro ao enviar mídia para ${numero}:`, erro.response?.data || erro.message);
+    return null;
   }
 }
