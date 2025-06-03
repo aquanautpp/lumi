@@ -77,8 +77,10 @@ if (desafiosPendentes[from]) {
   const estilo = usuario.estilo?.tipo || null;
   const feedback = gerarFeedback(acertou, estilo);
   await enviarMensagemWhatsApp(from, feedback);
-  const msgNivel = verificarNivel(usuario);
-  if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+  if (acertou) {
+    const msgNivel = verificarNivel(usuario);
+    if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+  }
 
   delete desafiosPendentes[from];
   salvarMemoria();
