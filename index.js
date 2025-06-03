@@ -60,7 +60,7 @@ app.post('/webhook', async (req, res) => {
   // Handle mission progress
   if (missoesPendentes[from]) {
     const missao = missoesPendentes[from];
-    const desafioAtual = missao.desafios[misseao.atual];
+    const desafioAtual = missao.desafios[missao.atual];
     const acertou = validarResposta(texto, desafioAtual.resposta, desafioAtual.sinonimos || []);
 
     atualizarMemoria(from, desafioAtual.categoria, acertou, texto, desafioAtual.resposta);
