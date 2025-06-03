@@ -1,5 +1,5 @@
 import { salvarMemoria } from './persistencia.js';
-import { memoriaUsuarios } from './memoria.js'; // Pega memoriaUsuarios de memoria.js
+import { memoriaUsuarios } from './memoria.js';
 
 function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaCorreta) {
   if (!memoriaUsuarios[numero]) {
@@ -18,7 +18,7 @@ function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaC
     acertou
   });
 
-  salvarMemoria(); // Salva depois de atualizar
+  salvarMemoria();
 }
 
 export { atualizarMemoria };
