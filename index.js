@@ -68,7 +68,7 @@ app.post('/webhook', async (req, res) => {
   usuario.interacoes = (usuario.interacoes || 0) + 1;
   salvarMemoria();
 
-// --- BLOCO PARA RESPONDER O DESAFIO PENDENTE, COLE EXATAMENTE AQUI ---
+// --- Processa resposta do desafio pendente ---
 if (desafiosPendentes[from]) {
   const desafio = desafiosPendentes[from];
   const acertou = validarResposta(texto, desafio.resposta, desafio.sinonimos || []);
@@ -84,7 +84,6 @@ if (desafiosPendentes[from]) {
   salvarMemoria();
   return res.sendStatus(200);
 }
-// --- FIM DO BLOCO ---
   
   if (["parar", "cancelar", "sair"].includes(textoLower)) {
     delete missoesPendentes[from];
