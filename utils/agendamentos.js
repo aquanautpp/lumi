@@ -1,7 +1,4 @@
 import cron from 'node-cron';
-// Corrige imports inexistentes
-// Os módulos corretos para envio de mensagens e mídias
-// estão definidos em whatsapp.js
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './whatsapp.js';
 import { generatePdfReport } from './pdfReport.js';
 import { uploadPdfToServer } from './upload.js';
