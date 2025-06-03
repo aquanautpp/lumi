@@ -1,5 +1,8 @@
 // utils/desafios.js – versão consolidada, com lógica simplificada para crianças e melhorias visuais
 
+import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './whatsapp.js';
+import { desafiosPendentes, salvarMemoria } from './memoria.js';
+
 export const desafios = {
   matematica: [
     { enunciado: 'Quanto é 7 x 6?', resposta: '42', tipo: 'narrativo' },
@@ -83,4 +86,26 @@ export function gerarMissao(estilo = null) {
   }
 
   return missao.length === 3 ? missao : null;
+}
+
+export async function enviarCharadaVisual(numero) {
+  let desafioEncontrado = null;
+  let categoriaImagem = null;
+  for (const cat of Object.keys(desafios)) {
+    const possivel = desafios[cat].find(d => d.tipo === 'image');
+    if (possivel) {
+      desafioEncontrado = possivel;
+      categoriaImagem = cat;
+      break;
+    }
+  }
+  if (desafioEncontrado) {
+    desafiosPendentes[numero] = { ...desafioEncontrado, categoria: categoriaImagem };
+    salvarMemoria();
+    await enviarMensagemWhatsApp(numero, `🔍 Charada visual:\n\n${desafioEncontrado.enunciado}`);
+    if (desafioEncontrado.midia) await enviarMidiaWhatsApp(numero, desafioEncontrado.midia, desafioEncontrado.tipo);
+    return true;
+  }
+  await enviarMensagemWhatsApp(numero, 'Ainda não tenho uma charada visual no momento! 😕');
+  return false;
 }
