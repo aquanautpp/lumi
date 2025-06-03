@@ -54,10 +54,12 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
       const data = new Date(item.data).toLocaleString('pt-BR');
       const resultado = item.acertou ? '✅ Acertou' : '❌ Errou';
       const estilo = item.tipoDesafio ? ` (${item.tipoDesafio})` : '';
+      const respostaUsuario = item.respostaUsuario ? ` - Resposta: ${item.respostaUsuario}` : '';
+      const respostaCorreta = item.respostaCorreta ? ` - Correta: ${item.respostaCorreta}` : '';
       doc
         .fontSize(12)
         .fillColor('black')
-        .text(`${index + 1}. [${data}] ${resultado} - ${item.categoria}${estilo}`);
+        .text(`${index + 1}. [${data}] ${resultado} - ${item.categoria}${estilo}${respostaUsuario}${respostaCorreta}`);
     });
   }
 
