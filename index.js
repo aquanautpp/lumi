@@ -150,7 +150,13 @@ app.post('/webhook', async (req, res) => {
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo) : escolherDesafioPorCategoria(hoje.categoria);
     desafiosPendentes[from] = desafio;
     salvarMemoria();
-    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n🧠 ${desafio.enunciado}`);
+  if (!desafio) {
+  await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*, mas não encontrei um desafio agora. Me peça um desafio com outra categoria!`);
+  return;
+}
+
+await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n🧠 ${desafio.enunciado}`);
+
     if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
     return res.sendStatus(200);
   }
