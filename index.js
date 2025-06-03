@@ -1,4 +1,4 @@
-// index.js ATUALIZADO (com correções dos erros 1 a 13)
+// index.js
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
@@ -24,113 +24,161 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+const comandosRapidos = [
+  { title: "📚 Missão do Dia", body: "Quero a missão do dia" },
+  { title: "🧠 Me dá um desafio", body: "Quero um desafio" },
+  { title: "❓Quem é você?", body: "Quem é você?" }
+];
+
+function enviarMenuInicial(numero) {
+  return enviarMensagemWhatsApp(numero, 'Oi! Eu sou a Professora Lumi 💜 Sua tutora divertida para aprender brincando! O que você quer fazer hoje?', comandosRapidos);
+}
+
 app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
-  const texto = message.text?.body || '';
+  const texto = message.text?.body?.trim() || '';
   const textoLower = texto.toLowerCase();
 
-  // ❌ ERRO 7 – Permitir sair da missão/desafio
-  if (["parar", "cancelar", "chega"].some(cmd => textoLower.includes(cmd))) {
-    delete desafiosPendentes[from];
-    delete missoesPendentes[from];
-    await enviarMensagemWhatsApp(from, 'Tudo bem! Se quiser voltar depois, estarei por aqui 💜');
+  if (!memoriaUsuarios[from]) {
+    memoriaUsuarios[from] = { interacoes: 0, historico: [] };
+    await enviarMenuInicial(from);
     salvarMemoria();
     return res.sendStatus(200);
   }
 
-  // ❌ ERRO 12 – Bloquear resposta automática da IA em espanhol
-  if (textoLower.includes('gracias') || textoLower.includes('ayuda')) {
-    await enviarMensagemWhatsApp(from, 'Posso responder em português ou inglês! 😊');
+  const respondeuEstilo = await processarRespostaEstilo(from, texto);
+  if (respondeuEstilo) return res.sendStatus(200);
+
+  const usuario = memoriaUsuarios[from];
+  usuario.interacoes += 1;
+  memoriaUsuarios[from] = usuario;
+  salvarMemoria();
+
+  // Cancelar missão ou desafio
+  if (["parar", "cancelar", "sair"].includes(textoLower)) {
+    delete missoesPendentes[from];
+    delete desafiosPendentes[from];
+    await enviarMensagemWhatsApp(from, 'Tudo bem, a gente pode continuar depois! 💜');
     return res.sendStatus(200);
   }
 
-  // ❌ ERRO 13 – Pedir resposta correta
-  if (textoLower.includes('qual era a resposta')) {
-    const desafio = desafiosPendentes[from] || missoesPendentes[from]?.desafios?.[missoesPendentes[from]?.atual];
-    if (desafio) {
-      await enviarMensagemWhatsApp(from, `🧠 A resposta correta era: *${desafio.resposta}*`);
+  // Mostrar resposta anterior
+  if (textoLower.includes("qual era a resposta")) {
+    const historico = usuario.historico || [];
+    const ultimo = historico[historico.length - 1];
+    if (ultimo?.respostaCorreta) {
+      await enviarMensagemWhatsApp(from, `A resposta correta era: ${ultimo.respostaCorreta}`);
     } else {
-      await enviarMensagemWhatsApp(from, 'Não encontrei nenhum desafio ativo agora.');
+      await enviarMensagemWhatsApp(from, 'Não encontrei a última resposta correta 🤔');
     }
     return res.sendStatus(200);
   }
 
-  // ❌ ERRO 1 – Responder perguntas abertas com IA
-  const perguntasAbertas = ['quem é você', 'o que você faz', 'como funciona', 'lumi'];
-  if (perguntasAbertas.some(p => textoLower.includes(p))) {
-    const resposta = await gerarRespostaIA(texto);
-    await enviarMensagemWhatsApp(from, resposta);
+  // Missão do dia
+  if (textoLower.includes('missao') || textoLower.includes('missão')) {
+    if (!missoesPendentes[from]) {
+      const estilo = usuario.estilo?.tipo || null;
+      const missao = gerarMissao(estilo);
+      if (missao) {
+        missoesPendentes[from] = { desafios: missao, atual: 0 };
+        salvarMemoria();
+        const primeiro = missao[0];
+        await enviarMensagemWhatsApp(from, `🎯 Missão do Dia! Categoria: ${primeiro.categoria}\n\n🧠 ${primeiro.enunciado}`);
+        if (primeiro.midia) await enviarMidiaWhatsApp(from, primeiro.midia, primeiro.tipo);
+      } else {
+        await enviarMensagemWhatsApp(from, 'Não consegui criar a missão agora. Tente mais tarde!');
+      }
+    } else {
+      await enviarMensagemWhatsApp(from, 'Você já tem uma missão em andamento! Responda o desafio anterior.');
+    }
     return res.sendStatus(200);
   }
 
-  // Lógica de missão...
-  // (mantida como no seu código, mas validação corrigida no erro 2)
-
-  // ❌ ERRO 2 – Corrigir validação da missão
+  // Continuar missão
   if (missoesPendentes[from]) {
     const missao = missoesPendentes[from];
-    const desafioAtual = missao.desafios[missao.atual];
-    const acertou = validarResposta(texto, desafioAtual.resposta, desafioAtual.sinonimos || []);
+    const desafio = missao.desafios[missao.atual];
+    const acertou = validarResposta(texto, desafio.resposta, desafio.sinonimos || []);
 
-    atualizarMemoria(from, desafioAtual.categoria, acertou, texto, desafioAtual.resposta);
-    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    atualizarMemoria(from, desafio.categoria, acertou, texto, desafio.resposta);
+    const estilo = usuario.estilo?.tipo || null;
     const feedback = gerarFeedback(acertou, estilo);
-    await enviarMensagemWhatsApp(from, `🐶 *Luzinho diz:* ${feedback}`);
-
-    if (!memoriaUsuarios[from]?.modoSussurro) {
-      await enviarMensagemWhatsApp(from, getFala(acertou ? 'acerto' : 'erro'));
-    }
+    await enviarMensagemWhatsApp(from, feedback);
 
     if (acertou) {
-      missao.atual += 1;
-      if (missao.atual < 3) {
-        const proximoDesafio = missao.desafios[missao.atual];
-        const mensagem = `🎉 Parabéns! Aqui vai o próximo desafio (${proximoDesafio.categoria}):\n\n🧠 ${proximoDesafio.enunciado}`;
-        await enviarMensagemWhatsApp(from, mensagem);
-        if (proximoDesafio.midia) {
-          await enviarMidiaWhatsApp(from, proximoDesafio.midia, proximoDesafio.tipo === 'image' ? 'image' : 'video');
-        }
-      } else {
-        await enviarMensagemWhatsApp(from, '🎉 Missão completa! Você é demais! Aqui vai um selo especial: 🥇✨');
-        const msgNivel = verificarNivel(memoriaUsuarios[from]);
-        if (msgNivel) {
-          await enviarMensagemWhatsApp(from, msgNivel);
-          if (!memoriaUsuarios[from]?.modoSussurro) {
-            await enviarMensagemWhatsApp(from, getFala('nivel'));
-          }
-        }
+      missao.atual++;
+      if (missao.atual >= missao.desafios.length) {
+        await enviarMensagemWhatsApp(from, '🎉 Missão completa! Você é demais! 🥇✨');
+        const msgNivel = verificarNivel(usuario);
+        if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
         delete missoesPendentes[from];
-        salvarMemoria();
+      } else {
+        const prox = missao.desafios[missao.atual];
+        await enviarMensagemWhatsApp(from, `🎉 Muito bem! Agora tente este:\n\n🧠 ${prox.enunciado}`);
+        if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
       }
     } else {
-      await enviarMensagemWhatsApp(from, '😊 Quase lá! Vamos tentar de novo? A missão foi reiniciada.');
-      const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
-      const novaMissao = gerarMissao(estilo);
-      if (novaMissao) {
-        missoesPendentes[from] = {
-          desafios: novaMissao,
-          atual: 0
-        };
-        salvarMemoria();
-        const primeiroDesafio = novaMissao[0];
-        const mensagem = `🧠 Aqui vai seu primeiro desafio novamente (${primeiroDesafio.categoria}):\n\n${primeiroDesafio.enunciado}`;
-        await enviarMensagemWhatsApp(from, mensagem);
-        if (primeiroDesafio.midia) {
-          await enviarMidiaWhatsApp(from, primeiroDesafio.midia, primeiroDesafio.tipo === 'image' ? 'image' : 'video');
-        }
-      } else {
-        await enviarMensagemWhatsApp(from, 'Desculpe, não consegui criar uma nova missão. Tente novamente mais tarde!');
-        delete missoesPendentes[from];
-        salvarMemoria();
-      }
+      await enviarMensagemWhatsApp(from, 'Quase! Vamos tentar de novo? 🌀 A missão foi reiniciada.');
+      delete missoesPendentes[from];
+    }
+    salvarMemoria();
+    return res.sendStatus(200);
+  }
+
+  // Responder desafio pendente
+  if (desafiosPendentes[from]) {
+    const desafio = desafiosPendentes[from];
+    const acertou = validarResposta(texto, desafio.resposta, desafio.sinonimos || []);
+    atualizarMemoria(from, desafio.categoria, acertou, texto, desafio.resposta);
+    const estilo = usuario.estilo?.tipo || null;
+    const feedback = gerarFeedback(acertou, estilo);
+    await enviarMensagemWhatsApp(from, feedback);
+    const msgNivel = verificarNivel(usuario);
+    if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+    delete desafiosPendentes[from];
+    salvarMemoria();
+    return res.sendStatus(200);
+  }
+
+  // Pedir desafio
+  if (["quero um desafio", "me dá um desafio", "desafio"].some(t => textoLower.includes(t))) {
+    const estilo = usuario.estilo?.tipo || null;
+    const hoje = obterDesafioDoDia();
+    const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo) : escolherDesafioPorCategoria(hoje.categoria);
+    desafiosPendentes[from] = desafio;
+    salvarMemoria();
+    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n🧠 ${desafio.enunciado}`);
+    if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
+    return res.sendStatus(200);
+  }
+
+  // Pedir charada visual
+  if (textoLower.includes("charada") || textoLower.includes("imagem")) {
+    const desafio = desafios.find(d => d.tipo === 'image');
+    if (desafio) {
+      desafiosPendentes[from] = desafio;
+      salvarMemoria();
+      await enviarMensagemWhatsApp(from, `🔍 Charada visual:\n\n${desafio.enunciado}`);
+      if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
+    } else {
+      await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
     }
     return res.sendStatus(200);
   }
 
-  // Restante do seu código segue como está...
+  // Frases abertas
+  if (["oi", "olá", "quem é você", "lumi"].some(p => textoLower.includes(p))) {
+    await enviarMenuInicial(from);
+    return res.sendStatus(200);
+  }
+
+  // Último recurso: IA
+  const resposta = await gerarRespostaIA(texto);
+  await enviarMensagemWhatsApp(from, resposta);
+  res.sendStatus(200);
 });
 
 app.get('/webhook', (req, res) => {
@@ -138,8 +186,7 @@ app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-
-  if (mode && token && mode === 'subscribe' && token === VERIFY_TOKEN) {
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
     console.log('🔐 Webhook verificado com sucesso!');
     res.status(200).send(challenge);
   } else {
@@ -151,14 +198,7 @@ cron.schedule('0 9 * * 0', async () => {
   for (const numero of Object.keys(memoriaUsuarios)) {
     const usuario = memoriaUsuarios[numero];
     const caminho = `tmp/relatorio-${numero}.pdf`;
-
-    await generatePdfReport({
-      nome: usuario.nome || 'Aluno(a)',
-      numero,
-      progresso: usuario.historico,
-      caminho
-    });
-
+    await generatePdfReport({ nome: usuario.nome || 'Aluno(a)', numero, progresso: usuario.historico, caminho });
     const url = await uploadPdfToCloudinary(caminho);
     await enviarMidiaWhatsApp(numero, url, 'document');
     await enviarMensagemWhatsApp(numero, getFala('ausencia'));
@@ -166,7 +206,7 @@ cron.schedule('0 9 * * 0', async () => {
 });
 
 cron.schedule('0 10 * * 0', () => {
-  const desafio = '🌟 Desafio em família: Cada um deve dizer um número. Quem disser o maior ganha!';
+  const desafio = '🌟 Desafio em família: cada um deve dizer um número. Quem disser o maior ganha!';
   for (const numero of Object.keys(memoriaUsuarios)) {
     enviarMensagemWhatsApp(numero, desafio);
   }
