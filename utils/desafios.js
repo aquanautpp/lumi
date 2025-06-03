@@ -75,7 +75,7 @@ export function gerarMissao(estilo = null) {
         ? selecionarDesafioPorCategoriaEEstilo(cat, estilo)
         : escolherDesafioPorCategoria(cat);
       if (desafio) {
-        missao.push(desafio);
+        missao.push({ ...desafio, categoria: cat });
         usadas.add(cat);
       }
       categorias.splice(categorias.indexOf(cat), 1);
