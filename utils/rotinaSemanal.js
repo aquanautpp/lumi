@@ -1,16 +1,21 @@
-const desafiosPorDia = {
-  domingo:    { categoria: "lógica", dificuldade: "fácil" },
-  segunda:    { categoria: "multiplicação", dificuldade: "fácil" },
-  terca:      { categoria: "divisão", dificuldade: "fácil" },
-  quarta:     { categoria: "português", dificuldade: "média" },
-  quinta:     { categoria: "frações", dificuldade: "média" },
-  sexta:      { categoria: "problemas", dificuldade: "difícil" },
-  sabado:     { categoria: "misturado", dificuldade: "livre" },
+// utils/rotinaSemanal.js
+const categoriasPorDia = {
+  0: { categoria: 'família', dificuldade: 'fácil' },     // Domingo
+  1: { categoria: 'português', dificuldade: 'médio' },    // Segunda
+  2: { categoria: 'lógica', dificuldade: 'difícil' },     // Terça
+  3: { categoria: 'matemática', dificuldade: 'fácil' },   // Quarta
+  4: { categoria: 'memória', dificuldade: 'médio' },      // Quinta
+  5: { categoria: 'desenho', dificuldade: 'criativo' },   // Sexta
+  6: { categoria: 'mundo', dificuldade: 'explorador' }    // Sábado
 };
 
+/**
+ * Retorna a categoria e dificuldade do desafio do dia com base no dia da semana.
+ * @returns {{ categoria: string, dificuldade: string }}
+ */
 function obterDesafioDoDia() {
-  const diaAtual = new Date().toLocaleDateString("pt-BR", { weekday: "long" }).toLowerCase();
-  return desafiosPorDia[diaAtual] || desafiosPorDia["segunda"];
+  const hoje = new Date().getDay(); // 0 (domingo) até 6 (sábado)
+  return categoriasPorDia[hoje] || { categoria: 'matemática', dificuldade: 'fácil' };
 }
 
 export { obterDesafioDoDia };
