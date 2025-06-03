@@ -142,28 +142,7 @@ if (desafiosPendentes[from]) {
     if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
     return res.sendStatus(200);
   }
-
-  if (["charada", "imagem"].some(p => textoLower.includes(p))) {
-      let desafioEncontrado = null;
-    let categoriaImagem = null;
-    for (const cat of Object.keys(desafios)) {
-      const possivel = desafios[cat].find(d => d.tipo === 'image');
-      if (possivel) {
-        desafioEncontrado = possivel;
-        categoriaImagem = cat;
-        break;
-      }
-    }
-    if (desafioEncontrado) {
-      desafiosPendentes[from] = { ...desafioEncontrado, categoria: categoriaImagem };
-      salvarMemoria();
-      await enviarMensagemWhatsApp(from, `🔍 Charada visual:
-
-${desafioEncontrado.enunciado}`);
-      if (desafioEncontrado.midia) await enviarMidiaWhatsApp(from, desafioEncontrado.midia, desafioEncontrado.tipo);
-    } else {
-      await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
-    }
+   await enviarCharadaVisual(from);
     return res.sendStatus(200);
   }
 
