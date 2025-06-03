@@ -1,15 +1,16 @@
 import { salvarMemoria } from './persistencia.js';
+import { memoriaUsuarios } from './memoria.js'; // Pega memoriaUsuarios de memoria.js
 
 function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaCorreta) {
-  if (!global.memoriaUsuarios[numero]) {
-    global.memoriaUsuarios[numero] = {
+  if (!memoriaUsuarios[numero]) {
+    memoriaUsuarios[numero] = {
       nome: null,
       historico: [],
       nivelAnterior: 1
     };
   }
 
-  global.memoriaUsuarios[numero].historico.push({
+  memoriaUsuarios[numero].historico.push({
     data: new Date().toISOString(),
     categoria,
     respostaUsuario,
@@ -17,8 +18,7 @@ function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaC
     acertou
   });
 
-  salvarMemoria(); // Persistência após atualização
+  salvarMemoria(); // Salva depois de atualizar
 }
 
 export { atualizarMemoria };
-// feat: adiciona função de atualização de histórico
