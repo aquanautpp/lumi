@@ -2,4 +2,5 @@
   ├─ public/
   │   └─ tester.html
   ├─ index.js
+  ├─ package.json
   └─ ...
