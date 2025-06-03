@@ -25,7 +25,15 @@ app.use(bodyParser.json());
 
 // Webhook principal
 app.post('/webhook', async (req, res) => {
-  const { from, texto } = req.body;
+  const mensagem = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  const from = mensagem?.from;
+  const texto = mensagem?.text?.body;
+
+  if (!from || !texto) {
+    console.warn('Mensagem malformada recebida:', JSON.stringify(req.body, null, 2));
+    return res.sendStatus(200); // evita crash e responde OK para Meta
+  }
+
   const desafioPendente = desafiosPendentes[from];
 
   // Verifica se é uma resposta do teste de estilo
@@ -53,21 +61,16 @@ app.post('/webhook', async (req, res) => {
     await enviarMensagemWhatsApp(from, feedback);
     await enviarMensagemWhatsApp(from, falaMascote);
 
-    const usuario = memoriaUsuarios[from];
-    const mensagemNivel = verificarNivel(usuario);
+    const mensagemNivel = verificarNivel(memoriaUsuarios[from]);
     if (mensagemNivel) {
       await enviarMensagemWhatsApp(from, mensagemNivel);
       await enviarMensagemWhatsApp(from, getFala('nivel'));
     }
-
-} else if (
-  texto &&
-  (
+  } else if (
     texto.toLowerCase().includes("quero") ||
     texto.toLowerCase().includes("desafio") ||
     texto.toLowerCase().includes("pode mandar")
-  )
-) {
+  ) {
     const desafioHoje = obterDesafioDoDia();
     const desafio = escolherDesafioPorCategoria(desafioHoje.categoria, desafioHoje.dificuldade);
     desafiosPendentes[from] = desafio;
@@ -87,11 +90,10 @@ cron.schedule('0 9 * * 0', async () => {
   for (const numero of Object.keys(memoriaUsuarios)) {
     const usuario = memoriaUsuarios[numero];
     const caminho = `tmp/relatorio-${numero}.pdf`;
-    await gerarPdfRelatorio({ nome: usuario.nome || 'Aluno(a)', numero, progresso: usuario.historico, caminho });
+    await generatePdfReport({ nome: usuario.nome || 'Aluno(a)', numero, progresso: usuario.historico, caminho });
     const url = await uploadPdfToCloudinary(caminho);
     await enviarMidiaWhatsApp(numero, 'document', url);
 
-    // Fala do mascote sobre saudade
     const falaMascote = getFala('ausencia');
     await enviarMensagemWhatsApp(numero, falaMascote);
   }
