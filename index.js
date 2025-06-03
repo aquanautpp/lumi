@@ -52,6 +52,7 @@ app.post('/webhook', async (req, res) => {
   }
 
   const usuario = memoriaUsuarios[from];
+  usuario.historico = usuario.historico || [];
 
   // Garante que a mensagem de boas-vindas só seja enviada uma única vez
   if (!usuario.mensagemBoasVindasEnviada) {
@@ -64,7 +65,7 @@ app.post('/webhook', async (req, res) => {
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
 
-  usuario.interacoes += 1;
+  usuario.interacoes = (usuario.interacoes || 0) + 1;
   salvarMemoria();
 
 // --- BLOCO PARA RESPONDER O DESAFIO PENDENTE, COLE EXATAMENTE AQUI ---
@@ -128,7 +129,7 @@ if (desafiosPendentes[from]) {
     const estilo = usuario.estilo?.tipo || null;
     const hoje = obterDesafioDoDia();
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo) : escolherDesafioPorCategoria(hoje.categoria);
-    desafiosPendentes[from] = desafio;
+    desafiosPendentes[from] = desafio ? { ...desafio, categoria: hoje.categoria } : null;
     salvarMemoria();
     if (!desafio) {
       await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*, mas não encontrei um desafio agora. Me peça um desafio com outra categoria!`);
@@ -142,14 +143,23 @@ if (desafiosPendentes[from]) {
   }
 
   if (["charada", "imagem"].some(p => textoLower.includes(p))) {
-    const desafio = desafios.find(d => d.tipo === 'image');
-    if (desafio) {
-      desafiosPendentes[from] = desafio;
+      let desafioEncontrado = null;
+    let categoriaImagem = null;
+    for (const cat of Object.keys(desafios)) {
+      const possivel = desafios[cat].find(d => d.tipo === 'image');
+      if (possivel) {
+        desafioEncontrado = possivel;
+        categoriaImagem = cat;
+        break;
+      }
+    }
+    if (desafioEncontrado) {
+      desafiosPendentes[from] = { ...desafioEncontrado, categoria: categoriaImagem };
       salvarMemoria();
       await enviarMensagemWhatsApp(from, `🔍 Charada visual:
 
-${desafio.enunciado}`);
-      if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
+${desafioEncontrado.enunciado}`);
+      if (desafioEncontrado.midia) await enviarMidiaWhatsApp(from, desafioEncontrado.midia, desafioEncontrado.tipo);
     } else {
       await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
     }
