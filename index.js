@@ -61,12 +61,6 @@ app.post('/webhook', async (req, res) => {
     return res.sendStatus(200);
   }
 
-  // Frases abertas com menção ao criador só respondem se perguntarem explicitamente
-  if (["quem é você", "quem criou você", "criador", "foi criada", "de onde você veio"].some(p => textoLower.includes(p))) {
-    await enviarMensagemWhatsApp(from, 'Sou a Professora Lumi 💛! Estou sendo testada com carinho pelo Instituto Somos Luz e pelo IVAS, para tornar o aprendizado divertido! 💡');
-    return res.sendStatus(200);
-  }
-
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
 
