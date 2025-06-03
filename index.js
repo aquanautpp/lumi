@@ -68,7 +68,7 @@ app.post('/webhook', async (req, res) => {
   usuario.interacoes = (usuario.interacoes || 0) + 1;
   salvarMemoria();
 
-// --- Processa resposta do desafio pendente ---
+// Processa resposta do desafio pendente
 if (desafiosPendentes[from]) {
   const desafio = desafiosPendentes[from];
   const acertou = validarResposta(texto, desafio.resposta, desafio.sinonimos || []);
