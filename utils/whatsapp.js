@@ -1,12 +1,16 @@
-// utils/whatsapp.js
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { memoriaUsuarios } from './memoria.js';
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_ID = process.env.FROM_PHONE_ID;
 
 async function enviarMensagemWhatsApp(numero, mensagem) {
+  const usuario = memoriaUsuarios[numero];
+  if (usuario && usuario.modoSussurro) {
+    mensagem = "🤫 " + mensagem;
+  }
   try {
     const resposta = await axios.post(
       `https://graph.facebook.com/v18.0/${PHONE_ID}/messages`,
