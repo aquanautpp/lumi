@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { desafios, escolherDesafioPorCategoria } from './utils/desafios.js';
+import { desafios, selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './utils/memoria.js';
 import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
@@ -18,12 +18,11 @@ import { gerarRespostaIA } from './utils/ia.js';
 
 dotenv.config();
 
-const app = express(); // ✅ Agora o app é criado antes de ser usado
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// 🔁 Endpoint alternativo para testes manuais via HTML ou Postman
 app.post('/teste-local', async (req, res) => {
   const { from, texto } = req.body;
   if (!from || !texto) return res.sendStatus(400);
@@ -46,7 +45,8 @@ app.post('/teste-local', async (req, res) => {
     const acertou = validarResposta(texto, desafioPendente.resposta, desafioPendente.sinonimos || []);
     atualizarMemoria(from, desafioPendente.categoria, acertou, texto, desafioPendente.resposta);
 
-    const feedback = gerarFeedback(acertou, desafioPendente.categoria);
+    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    const feedback = gerarFeedback(acertou, estilo);
     const falaMascote = getFala(acertou ? 'acerto' : 'erro');
 
     await enviarMensagemWhatsApp(from, feedback);
@@ -66,11 +66,12 @@ app.post('/teste-local', async (req, res) => {
   const textoLower = texto.toLowerCase();
   if (textoLower.includes('quero') || textoLower.includes('desafio') || textoLower.includes('pode mandar')) {
     const desafioHoje = obterDesafioDoDia();
-    const desafio = escolherDesafioPorCategoria(desafioHoje.categoria, desafioHoje.dificuldade);
+    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(desafioHoje.categoria, estilo) : escolherDesafioPorCategoria(desafioHoje.categoria);
     desafiosPendentes[from] = desafio;
     salvarMemoria();
 
-    const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.pergunta}`;
+    const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.enunciado}`;
     await enviarMensagemWhatsApp(from, mensagem);
     return res.sendStatus(200);
   }
@@ -80,7 +81,6 @@ app.post('/teste-local', async (req, res) => {
   res.sendStatus(200);
 });
 
-// 🔄 Webhook da Meta
 app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
   if (!message) return res.sendStatus(200);
@@ -106,7 +106,8 @@ app.post('/webhook', async (req, res) => {
     const acertou = validarResposta(texto, desafioPendente.resposta, desafioPendente.sinonimos || []);
     atualizarMemoria(from, desafioPendente.categoria, acertou, texto, desafioPendente.resposta);
 
-    const feedback = gerarFeedback(acertou, desafioPendente.categoria);
+    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    const feedback = gerarFeedback(acertou, estilo);
     const falaMascote = getFala(acertou ? 'acerto' : 'erro');
 
     await enviarMensagemWhatsApp(from, feedback);
@@ -126,11 +127,12 @@ app.post('/webhook', async (req, res) => {
   const textoLower = texto.toLowerCase();
   if (textoLower.includes('quero') || textoLower.includes('desafio') || textoLower.includes('pode mandar')) {
     const desafioHoje = obterDesafioDoDia();
-    const desafio = escolherDesafioPorCategoria(desafioHoje.categoria, desafioHoje.dificuldade);
+    const estilo = memoriaUsuarios[from]?.estilo?.tipo || null;
+    const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(desafioHoje.categoria, estilo) : escolherDesafioPorCategoria(desafioHoje.categoria);
     desafiosPendentes[from] = desafio;
     salvarMemoria();
 
-    const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.pergunta}`;
+    const mensagem = `📅 Hoje é dia de *${desafioHoje.categoria}*!\n\n🧠 ${desafio.enunciado}`;
     await enviarMensagemWhatsApp(from, mensagem);
     return res.sendStatus(200);
   }
@@ -140,7 +142,6 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
-// Webhook da Meta para verificação inicial
 app.get('/webhook', (req, res) => {
   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
   const mode = req.query['hub.mode'];
@@ -155,7 +156,6 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// Relatórios semanais (domingo 9h)
 cron.schedule('0 9 * * 0', async () => {
   for (const numero of Object.keys(memoriaUsuarios)) {
     const usuario = memoriaUsuarios[numero];
@@ -175,7 +175,6 @@ cron.schedule('0 9 * * 0', async () => {
   }
 });
 
-// Desafio em família (domingo 10h)
 cron.schedule('0 10 * * 0', () => {
   const desafio = '🌟 Desafio em família: Cada um deve dizer um número. Quem disser o maior ganha!';
   for (const numero of Object.keys(memoriaUsuarios)) {
