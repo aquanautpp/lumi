@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { desafios, selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao } from './utils/desafios.js';
+import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, missoesPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
 import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
