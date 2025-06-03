@@ -10,10 +10,10 @@ const openai = new OpenAI({
 async function gerarRespostaIA(prompt) {
   try {
     // ✅ Validação de segurança
-    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
-      console.warn('Prompt inválido para a IA:', prompt);
-      return 'Não entendi muito bem... pode tentar de outro jeito? 🤔';
-    }
+   if (!prompt || typeof prompt !== 'string') {
+  console.error('Prompt inválido para a IA:', prompt);
+  return 'Desculpe, não entendi bem o que você quis dizer 🤔';
+}
 
     const resposta = await openai.chat.completions.create({
       model: 'gpt-4o',
