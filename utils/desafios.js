@@ -58,3 +58,23 @@ export function escolherDesafioPorCategoria(categoria) {
   if (!lista) return null;
   return lista[Math.floor(Math.random() * lista.length)];
 }
+
+export function gerarMissao(estilo = null) {
+  const categorias = ['matematica', 'logica', 'portugues'];
+  const missao = [];
+  const usedCategories = new Set();
+
+  while (missao.length < 3 && categorias.length > 0) {
+    const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+    if (!usedCategories.has(categoria)) {
+      const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(categoria, estilo) : escolherDesafioPorCategoria(categoria);
+      if (desafio) {
+        missao.push(desafio);
+        usedCategories.add(categoria);
+        categorias.splice(categorias.indexOf(categoria), 1);
+      }
+    }
+  }
+
+  return missao.length === 3 ? missao : null;
+}
