@@ -28,10 +28,12 @@ function verificarNivel(usuario) {
 }
 
 function definirNivel(estrelas) {
-  if (estrelas < 5) return 'Iniciante ⭐';
-  if (estrelas < 10) return 'Explorador 🔍';
-  if (estrelas < 15) return 'Desafiante 💥';
-  return 'Mestre Lumi 🧠';
+  if (estrelas < 3) return '🌱 Iniciante';
+  if (estrelas < 6) return '🌟 Explorador';
+  if (estrelas < 10) return '🚀 Desbravador';
+  if (estrelas < 14) return '🏆 Mestre';
+  if (estrelas < 18) return '🎓 Sábio';
+  return '🥇 Legendário';
 }
 
 export { verificarNivel, definirNivel, obterNivel };
