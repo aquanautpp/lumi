@@ -14,7 +14,7 @@ import { verificarNivel } from './utils/niveis.js';
 import { validarResposta, validarTentativas } from './utils/validacao.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
-import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
+import { aplicarPerguntaEstilo, processarRespostaEstilo, iniciarQuizAutomatico } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
 
 dotenv.config();
@@ -69,6 +69,10 @@ app.post('/webhook', async (req, res) => {
   usuario.interacoes = (usuario.interacoes || 0) + 1;
   salvarMemoria();
 
+if (await iniciarQuizAutomatico(from)) {
+    return res.sendStatus(200);
+  }
+  
 // Processa resposta do desafio pendente
 if (desafiosPendentes[from]) {
   const desafio = desafiosPendentes[from];
