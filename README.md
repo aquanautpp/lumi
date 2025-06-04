@@ -1,6 +1,6 @@
 # Lumi WhatsApp Bot
 
-Lumi é um bot educativo para WhatsApp que envia desafios, missões do dia e relatórios de desempenho em PDF. Também possui atividades em família, jogos visuais e uma aventura interativa.
+Lumi é um bot educativo para WhatsApp que envia desafios, missões do dia e outras atividades para toda a família. Também conta com uma aventura interativa para explorar o aprendizado de forma divertida.
 
 ## Instalação
 
@@ -38,10 +38,9 @@ Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
 - `Quero um desafio`
 - `Quem é você?`
 - `Qual meu nível?`
-- `Relatório`
+`Meu estilo`
 - `Desafio em família`
 - `Desafio da vida real`
-- `Jogo visual`
 - `Aventura`
 - `Charada`
 - `Parar`
