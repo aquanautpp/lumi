@@ -16,7 +16,7 @@ const diasDaSemana = [
 /**
  * Retorna o desafio do dia com base no dia da semana e, opcionalmente, em um estilo.
  */
-export function obterDesafioDoDia(dia = new Date().getDay(), estilo = null) {
+export function obterDesafioDoDia(dia = new Date().getDay(), estilo = null, numero = null) {
   const hoje = diasDaSemana.find(d => d.dia === dia);
 
   if (!hoje || !categoriasValidas.includes(hoje.categoria)) {
@@ -28,11 +28,11 @@ export function obterDesafioDoDia(dia = new Date().getDay(), estilo = null) {
   }
 
   let desafio = estilo
-    ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo)
-    : escolherDesafioPorCategoria(hoje.categoria);
+    ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo, numero)
+    : escolherDesafioPorCategoria(hoje.categoria, numero);
 
   if (!desafio) {
-    desafio = escolherDesafioPorCategoria('matematica');
+    desafio = escolherDesafioPorCategoria('matematica', numero);
   }
 
   return {
