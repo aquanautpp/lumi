@@ -21,7 +21,12 @@ Lumi é um bot que integra a API WhatsApp Business e diversos serviços para env
    - `PORT` &ndash; porta em que o servidor será iniciado (padrão `3000`).
    - `JSON_PATH` &ndash; caminho para o arquivo de memória usado pela aplicação.
 
-> „É necessário configurar um webhook no WhatsApp Business apontando para `http(s)://SEU_HOST/webhook` utilizando o `VERIFY_TOKEN` definido acima. Sem esse passo o aplicativo não receberá as mensagens do WhatsApp.”
+> "É necessário configurar um webhook no WhatsApp Business apontando para `http(s)://SEU_HOST/webhook` utilizando o `VERIFY_TOKEN` definido acima. Sem esse passo o aplicativo não receberá as mensagens do WhatsApp."
+
+## Webhook de verificação
+
+O endpoint `GET /webhook` é utilizado para validar o webhook configurado na Meta. Ele compara o valor recebido em `hub.verify_token` com a variável de ambiente `VERIFY_TOKEN`.
+Se forem iguais, retorna `hub.challenge`; caso contrário, responde com `403`.
 
 ## Execução do servidor
 
