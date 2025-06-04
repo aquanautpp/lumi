@@ -6,12 +6,18 @@ const niveis = [
 ];
 
 function obterNivel(acertos) {
-  return niveis.slice().reverse().find(n => acertos >= n.minAcertos) || niveis[0];
+return (
+    niveis
+      .slice()
+      .reverse()
+      .find(n => acertos >= n.minAcertos) || niveis[0]
+  );
 }
 
 function verificarNivel(usuario) {
   const acertos = usuario.historico?.filter(h => h.acertou).length || 0;
   const nivelAtual = obterNivel(acertos);
+  usuario.nivelAtual = nivelAtual.nivel;
   if (usuario.nivelAnterior !== nivelAtual.nivel) {
     usuario.nivelAnterior = nivelAtual.nivel;
     return `🎉 Parabéns! Você subiu para o nível ${nivelAtual.nivel}: ${nivelAtual.recompensa}!`;
@@ -26,5 +32,5 @@ function definirNivel(estrelas) {
   return 'Mestre Lumi 🧠';
 }
 
-export { verificarNivel, definirNivel };
+export { verificarNivel, definirNivel, obterNivel };
 // feat: adiciona sistema de níveis e recompensas
