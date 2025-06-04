@@ -140,10 +140,10 @@ app.post('/webhook', async (req, res) => {
     memoriaUsuarios[from] = {
       interacoes: 1,
       historico: [],
-  etapaCadastro: 'nome'
+      etapaCadastro: 'nome'
     };
-  await salvarMemoria();
-       await enviarMensagemWhatsApp(from, 'Oi! Como devo te chamar?');
+    await salvarMemoria();
+    await enviarMensagemWhatsApp(from, 'Eaí! Como você quer que eu te chame?');
     return res.sendStatus(200);
   }
 
