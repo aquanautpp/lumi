@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual } from './utils/desafios.js';
+import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, missoesPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
 import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
@@ -94,6 +94,7 @@ if (desafiosPendentes[from]) {
 
   const estilo = usuario.estilo?.tipo || null;
  if (resultado.acertou) {
+     registrarDesafioResolvido(desafio);
     const feedback = gerarFeedback(true, estilo);
     await enviarMensagemWhatsApp(from, feedback);
     const msgNivel = verificarNivel(usuario);
@@ -102,6 +103,7 @@ if (desafiosPendentes[from]) {
   } else if (resultado.dica) {
     await enviarMensagemWhatsApp(from, resultado.dica);
   } else if (resultado.explicacao) {
+   registrarDesafioResolvido(desafio);
     await enviarMensagemWhatsApp(from, resultado.explicacao);
     const feedback = gerarFeedback(false, estilo);
     await enviarMensagemWhatsApp(from, feedback);
