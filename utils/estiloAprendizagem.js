@@ -3,9 +3,9 @@ import { memoriaUsuarios, salvarMemoria } from './memoria.js';
 import { enviarMensagemWhatsApp } from './whatsapp.js';
 
 const perguntasEstilo = [
-  { id: 1, estilo: "visual", texto: "📸 Você prefere aprender vendo imagens ou vídeos?" },
-  { id: 2, estilo: "auditivo", texto: "🎧 Você aprende melhor ouvindo explicações ou músicas?" },
-  { id: 3, estilo: "cinestesico", texto: "👐 Gosta de aprender fazendo coisas com as mãos ou se movendo?" },
+  { id: 1, estilo: "visual", texto: "📸 Gosto de aprender vendo imagens e vídeos." },
+  { id: 2, estilo: "auditivo", texto: "🎧 Aprendo melhor ouvindo explicações e músicas." },
+  { id: 3, estilo: "cinestesico", texto: "👐 Prefiro aprender fazendo coisas com as mãos e me movendo." },
   { id: 4, estilo: "narrativo", texto: "📖 Você adora quando te explicam algo com uma história?" },
   { id: 5, estilo: "visual", texto: "👀 Você prefere ver um desenho do que ouvir uma explicação?" },
   { id: 6, estilo: "auditivo", texto: "🎤 Você lembra melhor quando alguém te conta em voz alta?" }
@@ -66,7 +66,7 @@ export async function processarRespostaEstilo(numero, texto) {
 
     const mensagens = {
       visual: "🌈 Você tem um jeitinho *visual* de aprender! Vou usar mais desenhos e desafios com imagens pra te ajudar!",
-      auditivo: "🎵 Você é um aprendiz *auditivo*! Vou usar áudios e rimas pra facilitar seu aprendizado!",
+      auditivo: "🎵 Você é um aprendiz *auditivo*! Vou usar rimas e descrições faladas pra facilitar seu aprendizado!",
       cinestesico: "🤸‍♀️ Você aprende com o corpo! Desafios com movimento e prática vão te ajudar muito!",
       narrativo: "📚 Você é apaixonado por histórias! Vou contar aventuras enquanto ensinamos juntos!"
     };
@@ -81,22 +81,6 @@ ${mensagens[estiloDominante]}`);
   return true;
 }
 
-export async function iniciarQuizAutomatico(numero) {
-  const usuario = memoriaUsuarios[numero];
-  if (!usuario) return false;
-
-  usuario.estilo = usuario.estilo || { respostas: {}, concluido: false };
-
-  const interacoes = usuario.interacoes || 0;
-  if (
-    interacoes >= 5 &&
-    interacoes <= 8 &&
-    !usuario.estilo.concluido &&
-    !usuario.estilo.perguntaAtual &&
-    Object.keys(usuario.estilo.respostas).length === 0
-  ) {
-    await aplicarPerguntaEstilo(numero);
-    return true;
-  }
+export async function iniciarQuizAutomatico() {
   return false;
 }
