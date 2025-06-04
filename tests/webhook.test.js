@@ -13,7 +13,7 @@ describe('GET /webhook', () => {
   test('retorna challenge quando token confere', async () => {
     const res = await request(app)
       .get('/webhook')
-      .query({ 'hub.verify_token': 'test-token', 'hub.challenge': 'abc' });
+     .query({ 'hub.mode': 'subscribe', 'hub.verify_token': 'test-token', 'hub.challenge': 'abc' });
     expect(res.status).toBe(200);
     expect(res.text).toBe('abc');
   });
