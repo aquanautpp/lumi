@@ -11,7 +11,7 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
   doc
     .fontSize(20)
     .fillColor('purple')
-    .text('📘 Relatório de Progresso - Professora Lumi 💛', { align: 'center' })
+   .text('📘 Relatório de Progresso - Lumi 💛', { align: 'center' })
     .moveDown();
 
   doc
@@ -71,7 +71,7 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
   doc
     .fontSize(12)
     .fillColor('gray')
-    .text('👩‍🏫 Com carinho, Professora Lumi 💛', { align: 'right' });
+     .text('👩‍🏫 Com carinho, Lumi 💛', { align: 'right' });
 
   doc.end();
 }
