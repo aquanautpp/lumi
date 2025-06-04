@@ -28,6 +28,9 @@ function validarResposta(respostaUsuario, respostaCorreta, sinonimos = []) {
 
   const normalizarNumero = (str) => (mapaNumeros[str] !== undefined ? mapaNumeros[str] : str);
 
+ const usuarioNormalizado = normalizarNumero(normalizar(respostaUsuario));
+  const corretaNormalizada = normalizarNumero(normalizar(respostaCorreta));
+  
   const usuarioNumerico = mapaNumeros[usuarioNormalizado] ?? usuarioNormalizado;
   const corretaNumerico = mapaNumeros[corretaNormalizada] ?? corretaNormalizada;
   
