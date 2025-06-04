@@ -1,7 +1,7 @@
 // utils/desafios.js – versão consolidada, com lógica simplificada para crianças e melhorias visuais
 
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './whatsapp.js';
-import { desafiosPendentes, salvarMemoria } from './memoria.js';
+import { desafiosPendentes, salvarMemoria, memoriaUsuarios } from './memoria.js';
 
 export const desafios = {
   matematica: [
@@ -51,25 +51,25 @@ export const desafios = {
   ]
 };
 
-export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo) {
+export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) {
   const lista = desafios[categoria];
   if (!lista) return null;
   let filtrados = lista.filter(d => d.tipo === estilo);
-  filtrados = filtrarResolvidos(filtrados);
+  filtrados = filtrarResolvidos(filtrados, numero);
   if (filtrados.length === 0) {
-    filtrados = filtrarResolvidos(lista);
+    filtrados = filtrarResolvidos(lista, numero);
   }
   return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
-export function escolherDesafioPorCategoria(categoria) {
+export function escolherDesafioPorCategoria(categoria, numero) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  const filtrados = filtrarResolvidos(lista);
+  const filtrados = filtrarResolvidos(lista, numero);
   return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
-export function gerarMissao(estilo = null) {
+export function gerarMissao(estilo = null, numero) {
   const categorias = ['matematica', 'logica', 'portugues'];
   const usadas = new Set();
   const missao = [];
@@ -78,8 +78,8 @@ export function gerarMissao(estilo = null) {
     const cat = categorias[Math.floor(Math.random() * categorias.length)];
     if (!usadas.has(cat)) {
       const desafio = estilo
-        ? selecionarDesafioPorCategoriaEEstilo(cat, estilo)
-        : escolherDesafioPorCategoria(cat);
+        ? selecionarDesafioPorCategoriaEEstilo(cat, estilo, numero)
+        : escolherDesafioPorCategoria(cat, numero);
       if (desafio) {
         missao.push({ ...desafio, categoria: cat });
         usadas.add(cat);
@@ -111,4 +111,21 @@ export async function enviarCharadaVisual(numero) {
   }
   await enviarMensagemWhatsApp(numero, 'Ainda não tenho uma charada visual no momento! 😕');
   return false;
+}
+
+function filtrarResolvidos(lista, numero) {
+  const resolvidos = new Set(memoriaUsuarios[numero]?.resolvidos || []);
+  return lista.filter(d => !resolvidos.has(d.enunciado));
+}
+
+export function registrarDesafioResolvido(numero, desafio) {
+  if (!memoriaUsuarios[numero]) {
+    memoriaUsuarios[numero] = { historico: [], resolvidos: [] };
+  }
+  const user = memoriaUsuarios[numero];
+  user.resolvidos = user.resolvidos || [];
+  if (!user.resolvidos.includes(desafio.enunciado)) {
+    user.resolvidos.push(desafio.enunciado);
+    salvarMemoria();
+  }
 }
