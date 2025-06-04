@@ -45,7 +45,11 @@ app.post('/webhook', async (req, res) => {
 
   // Caso ainda não exista memória, cria e envia mensagem inicial uma única vez
   if (!memoriaUsuarios[from]) {
-    memoriaUsuarios[from] = { interacoes: 0, historico: [], mensagemBoasVindasEnviada: false };
+    memoriaUsuarios[from] = {
+      interacoes: 1,
+      historico: [],
+      mensagemBoasVindasEnviada: false
+    };
     await enviarBoasVindas(from);
     memoriaUsuarios[from].mensagemBoasVindasEnviada = true;
     salvarMemoria();
