@@ -32,8 +32,7 @@ import { iniciarAventura, enviarDesafioAventura } from './utils/aventura.js';
 dotenv.config();
 
 function validateEnv() {
-    if (process.env.NODE_ENV === 'test') return;
-    if (process.env.NODE_ENV === 'test') return;
+  if (process.env.NODE_ENV === 'test') return;
   const required = ['WHATSAPP_TOKEN', 'PHONE_ID', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
   const missing = required.filter(v => !process.env[v]);
   if (missing.length) {
