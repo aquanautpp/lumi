@@ -6,6 +6,8 @@ describe('niveis', () => {
     expect(obterNivel(7).nivel).toBe(2);
     expect(obterNivel(12).nivel).toBe(3);
     expect(obterNivel(25).nivel).toBe(4);
+    expect(obterNivel(32).nivel).toBe(5);
+    expect(obterNivel(52).nivel).toBe(6);
   });
 
   test('verificarNivel indica troca de nivel', () => {
