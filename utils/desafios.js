@@ -54,16 +54,19 @@ export const desafios = {
 export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  const filtrados = lista.filter(d => d.tipo === estilo);
-  return filtrados.length > 0
-    ? filtrados[Math.floor(Math.random() * filtrados.length)]
-    : lista[Math.floor(Math.random() * lista.length)];
+  let filtrados = lista.filter(d => d.tipo === estilo);
+  filtrados = filtrarResolvidos(filtrados);
+  if (filtrados.length === 0) {
+    filtrados = filtrarResolvidos(lista);
+  }
+  return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
 export function escolherDesafioPorCategoria(categoria) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  return lista[Math.floor(Math.random() * lista.length)];
+  const filtrados = filtrarResolvidos(lista);
+  return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
 export function gerarMissao(estilo = null) {
