@@ -21,9 +21,6 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
   }
   if (usuario?.mascote) {
     mensagem = mensagem.replace(/\{mascote\}/gi, usuario.mascote);
-    if (!mensagem.toLowerCase().includes(usuario.mascote.toLowerCase())) {
-      mensagem += ` ${usuario.mascote} ficou orgulhosa!`;
-    }
   }
 
   if (usuario?.modoSussurro) mensagem = "🤫 " + mensagem;
