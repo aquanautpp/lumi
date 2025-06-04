@@ -85,3 +85,4 @@ web_modules/
 # Outros arquivos específicos do seu projeto
 mensagens_falhas.txt
 *.pdf
+lumi/
