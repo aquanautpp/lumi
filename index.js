@@ -13,20 +13,17 @@ import {
   definirNome,
   definirMascote
 } from './utils/memoria.js';
-import { generatePdfReport } from './utils/pdfReport.js';
-import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel, obterNivel } from './utils/niveis.js';
 import { validarResposta, validarTentativas } from './utils/validacao.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
-import { aplicarPerguntaEstilo, processarRespostaEstilo, iniciarQuizAutomatico } from './utils/estiloAprendizagem.js';
+import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
-import { agendarEnvioRelatorios, agendarDesafiosFamilia } from './utils/agendamentos.js';
+import { agendarDesafiosFamilia } from './utils/agendamentos.js';
 import { enviarDesafioFamilia } from './utils/desafioFamilia.js';
 import { enviarDesafioVidaReal } from './utils/desafiosVidaReal.js';
-import { enviarJogoVisual } from './utils/jogosVisuais.js';
 import { iniciarAventura, enviarDesafioAventura } from './utils/aventura.js';
 
 dotenv.config();
@@ -74,17 +71,17 @@ const OPCOES_FINAIS = [
 ];
 
 const comandosDetalhados = [
-  "'Quero a missão do dia' - Receber três desafios especiais",
-  "'Quero um desafio' - Desafio do dia",
-  "'Quem é você?' - Saber sobre a Lumi",
-  "'Qual meu nível?' - Ver seu progresso",
-  "'Relatório' - PDF com seu desempenho",
-  "'Desafio em família' - Atividade em grupo",
-  "'Desafio da vida real' - Tarefas para fazer em casa",
-  "'Jogo visual' - Brincar com imagens",
-  "'Aventura' - Desafio temático",
-  "'Charada' - Enviar uma charada divertida",
-  "'Parar' - Cancelar missões ou desafios"
+"📚 'Quero a missão do dia' - Receber três desafios especiais",
+  "🧠 'Quero um desafio' - Desafio do dia",
+  "❓ 'Quem é você?' - Saber sobre a Lumi",
+  "📈 'Qual meu nível?' - Ver seu progresso",
+  "🎯 'Meu estilo' - Teste de personalidade",
+  "👨‍👩‍👧 'Desafio em família' - Atividade em grupo",
+  "🏠 'Desafio da vida real' - Tarefas para fazer em casa",
+  "🌋 'Aventura' - Desafio temático",
+  "❓ 'Charada' - Enviar uma charada divertida",
+  "🛑 'Parar' - Cancelar missões ou desafios"
+
 ];
 
 function enviarListaComandos(numero) {
@@ -98,7 +95,7 @@ function enviarListaComandos(numero) {
 function enviarBoasVindas(numero) {
   return enviarMensagemWhatsApp(
     numero,
-    "Oi, eu sou a Lumi 💛. Se quiser saber tudo o que posso fazer, peça o 'menu'.",
+     "Oi, eu sou a Lumi 💛. Peça o 'menu' para ver meus comandos e escreva 'Meu estilo' se quiser descobrir seu jeito de aprender!",
     comandosRapidos
   );
 }
@@ -214,91 +211,11 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     await enviarMensagemWhatsApp(from, 'Sou a Lumi, sua parceira de estudos! 💛');
     return res.sendStatus(200);
   }
-  
-if (await iniciarQuizAutomatico(from)) {
+  if (textoLower.includes('meu estilo') || textoLower.includes('estilo de aprendizagem')) {
+    await aplicarPerguntaEstilo(from);
     return res.sendStatus(200);
-  }
-  
-// Processa resposta do desafio pendente
-if (desafiosPendentes[from]) {
-  const desafio = desafiosPendentes[from];
-
-  if (textoLower.includes('qual a explicação')) {
-    const msg = desafio.explicacao || `A resposta correta é ${desafio.resposta}.`;
-    await enviarMensagemWhatsApp(from, msg);
-    delete desafiosPendentes[from];
-    await salvarMemoria();
-    return res.sendStatus(200);
-  }
-
-    const resultado = validarTentativas(texto, desafio);
-   await atualizarMemoria(from, desafio.categoria, resultado.acertou, texto, desafio.resposta, desafio.enunciado);
-
-  const estilo = usuario.estilo?.tipo || null;
-    if (resultado.acertou) {
-    registrarDesafioResolvido(from, desafio);
-    const feedback = gerarFeedback(true, estilo);
-    await enviarMensagemWhatsApp(from, feedback);
-    await enviarMensagemWhatsApp(from, getFala('acerto'));
-    if (['portugues','ciencias','historia'].includes(desafio.categoria)) {
-    await enviarMensagemWhatsApp(from, getFala(desafio.categoria));
-    }
-    const msgNivel = verificarNivel(usuario);
-    if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
-    delete desafiosPendentes[from];
-      if (missoesPendentes[from]) {
-      const missao = missoesPendentes[from];
-      missao.atual += 1;
-      if (missao.atual < missao.desafios.length) {
-        const prox = missao.desafios[missao.atual];
-        desafiosPendentes[from] = { ...prox, categoria: prox.categoria, tentativas: 0 };
-        await salvarMemoria();
-        await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n🧠 ${prox.enunciado}`);
-        if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
-        return res.sendStatus(200);
-      } else {
-        delete missoesPendentes[from];
-        await salvarMemoria();
-        await enviarMensagemWhatsApp(from, 'Parabéns! Você concluiu a missão do dia! 🎉');
-        await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
-        return res.sendStatus(200);
-      }
-    }
-    await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
-  } else if (resultado.dica) {
-    await enviarMensagemWhatsApp(from, resultado.dica);
-  } else if (resultado.explicacao) {
-  registrarDesafioResolvido(from, desafio);
-    await enviarMensagemWhatsApp(from, resultado.explicacao);
-    const feedback = gerarFeedback(false, estilo);
-    await enviarMensagemWhatsApp(from, feedback);
-    await enviarMensagemWhatsApp(from, getFala('erro'));
-    delete desafiosPendentes[from];
-      if (missoesPendentes[from]) {
-      const missao = missoesPendentes[from];
-      missao.atual += 1;
-      if (missao.atual < missao.desafios.length) {
-        const prox = missao.desafios[missao.atual];
-        desafiosPendentes[from] = { ...prox, categoria: prox.categoria, tentativas: 0 };
-        await salvarMemoria();
-        await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n🧠 ${prox.enunciado}`);
-        if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
-        return res.sendStatus(200);
-      } else {
-        delete missoesPendentes[from];
-        await salvarMemoria();
-        await enviarMensagemWhatsApp(from, 'Parabéns! Você concluiu a missão do dia! 🎉');
-        await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
-        return res.sendStatus(200);
-      }
-    }
-    await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
-  }
-
-  await salvarMemoria();
-  return res.sendStatus(200);
-}
-  
+  } 
+ 
   if (["parar", "cancelar", "sair"].includes(textoLower)) {
     delete missoesPendentes[from];
     delete desafiosPendentes[from];
@@ -325,17 +242,9 @@ if (desafiosPendentes[from]) {
     await enviarMensagemWhatsApp(from, `Seu nível atual é ${infoNivel.nivel}: ${infoNivel.recompensa}`);
     return res.sendStatus(200);
   }
-
-  if (textoLower.includes('relatorio') || textoLower.includes('relatório')) {
-    if (!fs.existsSync('tmp')) fs.mkdirSync('tmp');
-    const caminho = `tmp/relatorio-${from}.pdf`;
-    generatePdfReport({ nome: usuario.nome || 'Aluno', numero: from, progresso: usuario.historico || [], caminho });
-    const urlPdf = await uploadPdfToCloudinary(caminho);
-    await enviarMidiaWhatsApp(from, urlPdf, 'document');
-    return res.sendStatus(200);
-  }
-  
+ 
   if (textoLower.includes('missao') || textoLower.includes('missão')) {
+        delete desafiosPendentes[from];
     if (!missoesPendentes[from]) {
       const estilo = usuario.estilo?.tipo || null;
       const missao = gerarMissao(estilo, from);
@@ -356,7 +265,9 @@ if (desafiosPendentes[from]) {
     return res.sendStatus(200);
   }
 
-  if (["quero um desafio", "me dá um desafio", "desafio"].some(t => textoLower === t)) {
+  const comandosDesafio = ['quero um desafio', 'me da um desafio', 'desafio'];
+  if (comandosDesafio.some(c => textoSemAcento.includes(c))) {
+    delete desafiosPendentes[from];
     const estilo = usuario.estilo?.tipo || null;
     const hoje = obterDesafioDoDia(undefined, null, from);
     const desafio = escolherDesafioPorCategoria(hoje.categoria, from, estilo);
@@ -373,21 +284,19 @@ if (desafiosPendentes[from]) {
   }
 
  if (textoLower.includes('desafio em familia') || textoLower.includes('desafio em família')) {
+       delete desafiosPendentes[from];
     await enviarDesafioFamilia(from);
     return res.sendStatus(200);
   }
 
   if (textoLower.includes('desafio da vida real')) {
+        delete desafiosPendentes[from];
     await enviarDesafioVidaReal(from);
     return res.sendStatus(200);
   }
 
-  if (textoLower.includes('jogo visual')) {
-    await enviarJogoVisual(from);
-    return res.sendStatus(200);
-  }
-
   if (textoLower.includes('aventura')) {
+        delete desafiosPendentes[from];
     if (!memoriaUsuarios[from]?.aventura) iniciarAventura(from);
     const msg = enviarDesafioAventura(from);
     if (msg) {
@@ -398,8 +307,8 @@ if (desafiosPendentes[from]) {
     return res.sendStatus(200);
   }
 
-  
-  if (textoLower.includes("charada")) {
+    if (textoLower.includes("charada")) {
+          delete desafiosPendentes[from];
     const estilo = usuario.estilo?.tipo || null;
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo("charada", estilo, from) : escolherDesafioPorCategoria("charada", from);
     if (desafio) {
@@ -409,6 +318,83 @@ if (desafiosPendentes[from]) {
     } else {
     await enviarMensagemWhatsApp(from, "Não encontrei uma charada agora. Tente mais tarde!");
     }
+    return res.sendStatus(200);
+  }
+
+  // Processa resposta do desafio pendente
+  if (desafiosPendentes[from]) {
+    const desafio = desafiosPendentes[from];
+
+    if (textoLower.includes('qual a explicacao') || textoLower.includes('qual a explicação')) {
+      const msg = desafio.explicacao || `A resposta correta é ${desafio.resposta}.`;
+      await enviarMensagemWhatsApp(from, msg);
+      delete desafiosPendentes[from];
+      await salvarMemoria();
+      return res.sendStatus(200);
+    }
+
+    const resultado = validarTentativas(texto, desafio);
+    await atualizarMemoria(from, desafio.categoria, resultado.acertou, texto, desafio.resposta, desafio.enunciado);
+
+    const estilo = usuario.estilo?.tipo || null;
+    if (resultado.acertou) {
+      registrarDesafioResolvido(from, desafio);
+      const feedback = gerarFeedback(true, estilo);
+      await enviarMensagemWhatsApp(from, feedback);
+      await enviarMensagemWhatsApp(from, getFala('acerto'));
+      if (['portugues','ciencias','historia'].includes(desafio.categoria)) {
+        await enviarMensagemWhatsApp(from, getFala(desafio.categoria));
+      }
+      const msgNivel = verificarNivel(usuario);
+      if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+      delete desafiosPendentes[from];
+      if (missoesPendentes[from]) {
+        const missao = missoesPendentes[from];
+        missao.atual += 1;
+        if (missao.atual < missao.desafios.length) {
+          const prox = missao.desafios[missao.atual];
+          desafiosPendentes[from] = { ...prox, categoria: prox.categoria, tentativas: 0 };
+          await salvarMemoria();
+          await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n🧠 ${prox.enunciado}`);
+          if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
+          return res.sendStatus(200);
+        } else {
+          delete missoesPendentes[from];
+          await salvarMemoria();
+          await enviarMensagemWhatsApp(from, 'Parabéns! Você concluiu a missão do dia! 🎉');
+          await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
+          return res.sendStatus(200);
+        }
+      }
+      await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
+    } else if (resultado.dica) {
+      await enviarMensagemWhatsApp(from, resultado.dica);
+    } else if (resultado.explicacao) {
+      registrarDesafioResolvido(from, desafio);
+      await enviarMensagemWhatsApp(from, resultado.explicacao);
+      delete desafiosPendentes[from];
+      if (missoesPendentes[from]) {
+        const missao = missoesPendentes[from];
+        missao.atual += 1;
+        if (missao.atual < missao.desafios.length) {
+          const prox = missao.desafios[missao.atual];
+          desafiosPendentes[from] = { ...prox, categoria: prox.categoria, tentativas: 0 };
+          await salvarMemoria();
+          await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n🧠 ${prox.enunciado}`);
+          if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
+          return res.sendStatus(200);
+        } else {
+          delete missoesPendentes[from];
+          await salvarMemoria();
+          await enviarMensagemWhatsApp(from, 'Parabéns! Você concluiu a missão do dia! 🎉');
+          await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
+          return res.sendStatus(200);
+        }
+      }
+      await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
+    }
+
+    await salvarMemoria();
     return res.sendStatus(200);
   }
 
@@ -422,7 +408,6 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🚀 Lumi está rodando na porta ${PORT}`);
   });
 
-  agendarEnvioRelatorios();
   agendarDesafiosFamilia();
 }
 
