@@ -13,6 +13,20 @@ const LOG_PATH = 'mensagens_falhas.txt';
 
 export async function enviarMensagemWhatsApp(numero, mensagem, tentativa = 1) {
   const usuario = memoriaUsuarios[numero];
+  
+  if (usuario?.nome) {
+    mensagem = mensagem.replace(/\{nome\}/gi, usuario.nome);
+    if (!mensagem.startsWith(usuario.nome)) {
+      mensagem = `${usuario.nome}, ${mensagem}`;
+    }
+  }
+  if (usuario?.mascote) {
+    mensagem = mensagem.replace(/\{mascote\}/gi, usuario.mascote);
+    if (!mensagem.toLowerCase().includes(usuario.mascote.toLowerCase())) {
+      mensagem += ` ${usuario.mascote} ficou orgulhosa!`;
+    }
+  }
+
   if (usuario?.modoSussurro) mensagem = "🤫 " + mensagem;
 
   try {
