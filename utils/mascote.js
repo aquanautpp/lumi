@@ -20,7 +20,7 @@ export const mascote = {
       "Que incrível! Você é uma estrela! 🌌"
     ],
     ausencia: [
-      "Senti sua falta! Vamos brincar com números? 💜",
+      "Senti sua falta! Vamos brincar com números? 💛",
       "Ei, cadê você? Vamos aprender juntos! 📚",
       "Volte logo, tá? Você é meu parceiro de aventura! 😊"
     ]
