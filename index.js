@@ -39,8 +39,31 @@ const comandosRapidos = [
   { title: "❓Quem é você?", body: "Quem é você?" }
 ];
 
+const comandosDetalhados = [
+  "'Quero a missão do dia' - Receber três desafios especiais",
+  "'Quero um desafio' - Desafio do dia",
+  "'Quem é você?' - Saber sobre a Lumi",
+  "'Qual meu nível?' - Ver seu progresso",
+  "'Relatório' - PDF com seu desempenho",
+  "'Desafio em família' - Atividade em grupo",
+  "'Charada' - Enviar uma charada divertida",
+  "'Parar' - Cancelar missões ou desafios"
+];
+
+function enviarListaComandos(numero) {
+  const textoComandos = comandosDetalhados.join("\n");
+  return enviarMensagemWhatsApp(
+    numero,
+    `Aqui estão alguns comandos que posso entender:\n${textoComandos}`
+  );
+}
+
 function enviarBoasVindas(numero) {
-  return enviarMensagemWhatsApp(numero, 'Oi, eu sou a Lumi 💛', comandosRapidos);
+  return enviarMensagemWhatsApp(
+    numero,
+    "Oi, eu sou a Lumi 💛. Se precisar de ajuda, digite 'menu'.",
+    comandosRapidos
+  );
 }
 
 app.post('/webhook', async (req, res) => {
@@ -105,6 +128,16 @@ app.post('/webhook', async (req, res) => {
   usuario.interacoes = (usuario.interacoes || 0) + 1;
   salvarMemoria();
 
+if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
+    await enviarListaComandos(from);
+    return res.sendStatus(200);
+  }
+
+  if (textoLower.includes('quem e voce') || textoLower.includes('quem é você')) {
+    await enviarMensagemWhatsApp(from, 'Sou a Lumi, sua parceira de estudos! 💛');
+    return res.sendStatus(200);
+  }
+  
 if (await iniciarQuizAutomatico(from)) {
     return res.sendStatus(200);
   }
