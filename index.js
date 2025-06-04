@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
-import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido } from './utils/desafios.js';
+import { escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido } from './utils/desafios.js';
 import {
   memoriaUsuarios,
   desafiosPendentes,
@@ -174,6 +174,9 @@ if (desafiosPendentes[from]) {
     const feedback = gerarFeedback(true, estilo);
     await enviarMensagemWhatsApp(from, feedback);
     await enviarMensagemWhatsApp(from, getFala('acerto'));
+    if (['portugues','ciencias','historia'].includes(desafio.categoria)) {
+    await enviarMensagemWhatsApp(from, getFala(desafio.categoria));
+    }
     const msgNivel = verificarNivel(usuario);
     if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
     delete desafiosPendentes[from];
@@ -289,9 +292,8 @@ if (desafiosPendentes[from]) {
 
   if (["quero um desafio", "me dá um desafio", "desafio"].some(t => textoLower === t)) {
     const estilo = usuario.estilo?.tipo || null;
-        const hoje = obterDesafioDoDia(undefined, null, from);
-    const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo, from) : escolherDesafioPorCategoria(hoje.categoria, from);
-      desafiosPendentes[from] = desafio ? { ...desafio, categoria: hoje.categoria, tentativas: 0 } : null;
+    const hoje = obterDesafioDoDia(undefined, null, from);
+    const desafio = escolherDesafioPorCategoria(hoje.categoria, from, estilo);
     salvarMemoria();
     if (!desafio) {
       await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*, mas não encontrei um desafio agora. Me peça um desafio com outra categoria!`);
