@@ -33,6 +33,7 @@ dotenv.config();
 
 function validateEnv() {
     if (process.env.NODE_ENV === 'test') return;
+    if (process.env.NODE_ENV === 'test') return;
   const required = ['WHATSAPP_TOKEN', 'PHONE_ID', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
   const missing = required.filter(v => !process.env[v]);
   if (missing.length) {
@@ -49,10 +50,9 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.get('/webhook', (req, res) => {
-  const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-  if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
+  if (token === process.env.VERIFY_TOKEN) {
     return res.status(200).send(challenge);
   }
   return res.sendStatus(403);
@@ -103,6 +103,18 @@ function enviarBoasVindas(numero) {
     comandosRapidos
   );
 }
+
+app.get('/admin', (req, res) => {
+  const usuarios = Object.entries(memoriaUsuarios).map(([numero, dados]) => ({
+    numero,
+    nome: dados.nome || null,
+    nivel: dados.nivelAtual || 1,
+    missoesPendentes: missoesPendentes[numero]?.desafios?.length || 0,
+    desafiosPendentes: desafiosPendentes[numero] ? 1 : 0,
+    historico: (dados.historico || []).length
+  }));
+  res.json({ usuarios });
+});
 
 app.post('/webhook', async (req, res) => {
   const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
