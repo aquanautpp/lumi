@@ -6,7 +6,15 @@ import cron from 'node-cron';
 import fs from 'fs';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
 import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido } from './utils/desafios.js';
-import { memoriaUsuarios, desafiosPendentes, missoesPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
+import {
+  memoriaUsuarios,
+  desafiosPendentes,
+  missoesPendentes,
+  salvarMemoria,
+  alternarModoSussurro,
+  definirNome,
+  definirMascote
+} from './utils/memoria.js';
 import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
@@ -44,27 +52,42 @@ app.post('/webhook', async (req, res) => {
   const textoLower = texto.toLowerCase();
    const textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  // Caso ainda não exista memória, cria e envia mensagem inicial uma única vez
+  // Primeira interação: perguntar o nome que o usuário quer usar
   if (!memoriaUsuarios[from]) {
     memoriaUsuarios[from] = {
       interacoes: 1,
       historico: [],
-      mensagemBoasVindasEnviada: false
+  etapaCadastro: 'nome'
     };
-    await enviarBoasVindas(from);
-    memoriaUsuarios[from].mensagemBoasVindasEnviada = true;
     salvarMemoria();
+       await enviarMensagemWhatsApp(from, 'Oi! Como devo te chamar?');
     return res.sendStatus(200);
   }
 
   const usuario = memoriaUsuarios[from];
   usuario.historico = usuario.historico || [];
 
-  // Garante que a mensagem de boas-vindas só seja enviada uma única vez
-  if (!usuario.mensagemBoasVindasEnviada) {
-    await enviarBoasVindas(from);
-    usuario.mensagemBoasVindasEnviada = true;
+  if (usuario.etapaCadastro === 'nome') {
+    definirNome(from, texto);
+    usuario.etapaCadastro = 'mascote';
     salvarMemoria();
+    await enviarMensagemWhatsApp(from, `Muito prazer, ${texto}! Qual mascote você quer? 🦊 Fofuxa ou 🐻 Bolotinha?`);
+    return res.sendStatus(200);
+  }
+
+  if (usuario.etapaCadastro === 'mascote') {
+    let mascote = null;
+    if (textoSemAcento.includes('fofuxa')) mascote = 'Fofuxa';
+    if (textoSemAcento.includes('bolotinha')) mascote = 'Bolotinha';
+    if (mascote) {
+      definirMascote(from, mascote);
+      usuario.etapaCadastro = null;
+      salvarMemoria();
+      await enviarMensagemWhatsApp(from, `${mascote} está animada para te ver brilhar, ${usuario.nome}!`);
+      await enviarBoasVindas(from);
+    } else {
+      await enviarMensagemWhatsApp(from, 'Escolha entre Fofuxa ou Bolotinha 😉');
+    }
     return res.sendStatus(200);
   }
 
