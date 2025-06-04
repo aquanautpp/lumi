@@ -1,8 +1,10 @@
 const niveis = [
   { nivel: 1, minAcertos: 0, recompensa: '🌱 Iniciante' },
-  { nivel: 2, minAcertos: 5, recompensa: '🌟 Explorador' },
-  { nivel: 3, minAcertos: 10, recompensa: '🚀 Desbravador' },
-  { nivel: 4, minAcertos: 20, recompensa: '🏆 Mestre' }
+  { nivel: 2, minAcertos: 3, recompensa: '🌟 Explorador' },
+  { nivel: 3, minAcertos: 6, recompensa: '🚀 Desbravador' },
+  { nivel: 4, minAcertos: 10, recompensa: '🏆 Mestre' },
+  { nivel: 5, minAcertos: 14, recompensa: '🎓 Sábio' },
+  { nivel: 6, minAcertos: 18, recompensa: '🥇 Legendário' }
 ];
 
 function obterNivel(acertos) {
