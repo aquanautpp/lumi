@@ -5,7 +5,8 @@ function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaC
     memoriaUsuarios[numero] = {
       nome: null,
       historico: [],
-      nivelAnterior: 1
+        nivelAnterior: 1,
+      nivelAtual: 1
     };
   }
 
