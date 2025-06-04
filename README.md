@@ -1,49 +1,51 @@
-# Lumi
+# Lumi WhatsApp Bot
 
-Lumi é um bot que integra a API WhatsApp Business e diversos serviços para enviar desafios e mensagens personalizadas. O projeto é escrito em Node.js e utiliza Jest para os testes automatizados.
+Lumi é um bot educativo para WhatsApp que envia desafios, missões do dia e relatórios de desempenho em PDF. Também possui atividades em família, jogos visuais e uma aventura interativa.
 
-## Configuração
+## Instalação
 
-1. Instale as dependências:
-   ```bash
-   npm install
-   ```
-2. Copie `env.example` para `.env` e edite com suas credenciais:
-   ```bash
-   cp env.example .env
-   ```
-   Preencha as seguintes variáveis no `.env`:
-   - `OPENAI_API_KEY` &ndash; chave de acesso à API da OpenAI.
-   - `WHATSAPP_TOKEN` &ndash; token gerado no WhatsApp Business Cloud API.
-   - `FROM_PHONE_ID` ou `PHONE_ID` &ndash; identificador do telefone registrado na Meta.
-   - `VERIFY_TOKEN` &ndash; token que será utilizado na validação do webhook.
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` &ndash; credenciais do Cloudinary para o envio de relatórios.
-   - `PORT` &ndash; porta em que o servidor será iniciado (padrão `3000`).
-   - `JSON_PATH` &ndash; caminho para o arquivo de memória usado pela aplicação.
-
-> "É necessário configurar um webhook no WhatsApp Business apontando para `http(s)://SEU_HOST/webhook` utilizando o `VERIFY_TOKEN` definido acima. Sem esse passo o aplicativo não receberá as mensagens do WhatsApp."
-
-## Webhook de verificação
-
-O endpoint `GET /webhook` é utilizado para validar o webhook configurado na Meta. Ele compara o valor recebido em `hub.verify_token` com a variável de ambiente `VERIFY_TOKEN`.
-Se forem iguais, retorna `hub.challenge`; caso contrário, responde com `403`.
-
-## Execução do servidor
-
-Após configurar o `.env` e instalar as dependências, execute:
+1. Clone o repositório e instale as dependências:
 
 ```bash
-npm start
+npm install
 ```
 
-O servidor será iniciado na porta definida em `PORT`.
+2. Copie o arquivo `.env.example` para `.env` e preencha as variáveis obrigatórias.
 
-## Testes
+```bash
+cp env.example .env
+```
 
-Execute todos os testes com:
+3. Execute os testes para verificar a instalação:
 
 ```bash
 npm test
 ```
 
-Os testes são escritos usando Jest e estão localizados no diretório `tests`.
+4. Inicie o servidor local:
+
+```bash
+npm start
+```
+
+O webhook ficará disponível na porta definida em `PORT` (padrão 3000).
+
+## Comandos
+
+Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
+
+- `Quero a missão do dia`
+- `Quero um desafio`
+- `Quem é você?`
+- `Qual meu nível?`
+- `Relatório`
+- `Desafio em família`
+- `Desafio da vida real`
+- `Jogo visual`
+- `Aventura`
+- `Charada`
+- `Parar`
+
+## Testes
+
+Os testes utilizam Jest. Rode `npm test` para executá-los.
