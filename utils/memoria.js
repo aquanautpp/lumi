@@ -12,6 +12,26 @@ export const memoriaUsuarios = {};
 export const desafiosPendentes = {};
 export const missoesPendentes = {};
 
+export function obterNome(numero) {
+  return memoriaUsuarios[numero]?.nome || null;
+}
+
+export function definirNome(numero, nome) {
+  if (!memoriaUsuarios[numero]) memoriaUsuarios[numero] = {};
+  memoriaUsuarios[numero].nome = nome;
+  salvarMemoria();
+}
+
+export function obterMascote(numero) {
+  return memoriaUsuarios[numero]?.mascote || null;
+}
+
+export function definirMascote(numero, mascote) {
+  if (!memoriaUsuarios[numero]) memoriaUsuarios[numero] = {};
+  memoriaUsuarios[numero].mascote = mascote;
+  salvarMemoria();
+}
+
 function carregarMemoria() {
   if (fs.existsSync(MEMORIA_PATH)) {
     const dados = JSON.parse(fs.readFileSync(MEMORIA_PATH));
