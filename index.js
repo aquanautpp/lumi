@@ -71,7 +71,18 @@ app.post('/webhook', async (req, res) => {
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
-  let texto = message.text?.body?.trim() || '';
+  let texto = '';
+  if (message.text?.body) {
+    texto = message.text.body.trim();
+  } else if (message.interactive) {
+    const inter = message.interactive;
+    if (inter.button_reply) {
+      texto = inter.button_reply.id || inter.button_reply.title;
+    } else if (inter.list_reply) {
+      texto = inter.list_reply.id || inter.list_reply.title;
+    }
+  }
+
   let textoLower = texto.toLowerCase();
   let textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
