@@ -29,12 +29,37 @@ function generatePdfReport({ nome, numero, progresso, caminho }) {
   const totalEstrelas = progresso.filter(p => p.acertou).length;
   const nivel = definirNivel(totalEstrelas);
 
+  const categoriasEmoji = {
+    matematica: '➗',
+    logica: '🧩',
+    portugues: '💬',
+    ciencias: '🔬',
+    historia: '🏛️'
+  };
+  const contagem = {};
+  progresso.forEach(p => {
+    if (p.acertou) contagem[p.categoria] = (contagem[p.categoria] || 0) + 1;
+  });
+
   doc
     .fontSize(14)
     .fillColor('green')
     .text(`⭐ Estrelas acumuladas: ${totalEstrelas}`)
     .text(`🏆 Nível: ${nivel}`, { underline: true })
     .moveDown();
+
+  doc
+    .fontSize(16)
+    .fillColor('purple')
+    .text('📚 Desempenho por Matéria', { underline: true })
+    .moveDown(0.5);
+  Object.entries(categoriasEmoji).forEach(([cat, emoji]) => {
+    doc
+      .fontSize(12)
+      .fillColor('black')
+      .text(`${emoji} ${cat}: ${contagem[cat] || 0} acertos`);
+  });
+  doc.moveDown();
 
   doc
     .fontSize(16)
