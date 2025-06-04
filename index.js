@@ -58,6 +58,16 @@ const comandosRapidos = [
   { title: "❓Quem é você?", body: "Quem é você?" }
 ];
 
+const LIMITE_INTERACOES = 40;
+const MENSAGEM_FINAL =
+  "🌟 Essa é só uma versão de teste, e por aqui a nossa aventura termina… por enquanto!\n" +
+  "Mas eu tenho uma pergunta importante:\n" +
+  "Você gostaria de brincar com a versão oficial da Lumi? 💛";
+const OPCOES_FINAIS = [
+  { title: "Quero sim! 🌈", body: "Quero sim! 🌈" },
+  { title: "Não por enquanto 🤔", body: "Não por enquanto 🤔" }
+];
+
 const comandosDetalhados = [
   "'Quero a missão do dia' - Receber três desafios especiais",
   "'Quero um desafio' - Desafio do dia",
@@ -118,13 +128,24 @@ app.post('/webhook', async (req, res) => {
   }
 
   const usuario = memoriaUsuarios[from];
-   if (usuario.menuAtual && /^[1-3]$/.test(texto)) {
+  if (usuario.bloqueado) {
+    return res.sendStatus(200);
+  }
+  if (usuario.menuAtual && /^[1-3]$/.test(texto)) {
     const opcao = usuario.menuAtual[parseInt(texto) - 1];
     if (opcao) {
       texto = opcao.body;
       textoLower = texto.toLowerCase();
       textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
+  }
+  
+  if (usuario.aguardandoRespostaFinal) {
+    usuario.respostaFinal = texto;
+    usuario.aguardandoRespostaFinal = false;
+    usuario.bloqueado = true;
+    salvarMemoria();
+    return res.sendStatus(200);
   }
   usuario.historico = usuario.historico || [];
 
@@ -156,6 +177,12 @@ app.post('/webhook', async (req, res) => {
   if (respondeuEstilo) return res.sendStatus(200);
 
   usuario.interacoes = (usuario.interacoes || 0) + 1;
+    if (usuario.interacoes >= LIMITE_INTERACOES) {
+    usuario.aguardandoRespostaFinal = true;
+    salvarMemoria();
+    await enviarMensagemWhatsApp(from, MENSAGEM_FINAL, OPCOES_FINAIS);
+    return res.sendStatus(200);
+  }
   await salvarMemoria();
 
 if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
