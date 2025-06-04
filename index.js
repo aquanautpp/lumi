@@ -41,6 +41,7 @@ app.post('/webhook', async (req, res) => {
   const from = message.from;
   const texto = message.text?.body?.trim() || '';
   const textoLower = texto.toLowerCase();
+   const textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   // Caso ainda não exista memória, cria e envia mensagem inicial uma única vez
   if (!memoriaUsuarios[from]) {
@@ -158,7 +159,28 @@ if (desafiosPendentes[from]) {
     if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
     return res.sendStatus(200);
   }
-   await enviarCharadaVisual(from);
+
+  if (["charada", "imagem"].some(p => textoLower.includes(p))) {
+      let desafioEncontrado = null;
+    let categoriaImagem = null;
+    for (const cat of Object.keys(desafios)) {
+      const possivel = desafios[cat].find(d => d.tipo === 'image');
+      if (possivel) {
+        desafioEncontrado = possivel;
+        categoriaImagem = cat;
+        break;
+      }
+    }
+    if (desafioEncontrado) {
+     desafiosPendentes[from] = { ...desafioEncontrado, categoria: categoriaImagem, tentativas: 0 };
+      salvarMemoria();
+      await enviarMensagemWhatsApp(from, `🔍 Charada visual:
+
+${desafioEncontrado.enunciado}`);
+      if (desafioEncontrado.midia) await enviarMidiaWhatsApp(from, desafioEncontrado.midia, desafioEncontrado.tipo);
+    } else {
+      await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
+    }
     return res.sendStatus(200);
   }
 
