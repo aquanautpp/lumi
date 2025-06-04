@@ -74,13 +74,3 @@ export function atualizarMemoria(numero, categoria, acertou, respostaUsuario, re
 }
 
 carregarMemoria();
-
-export async function alternarModoSussurro(numero, ativar) {
-  if (!memoriaUsuarios[numero]) {
-    memoriaUsuarios[numero] = {};
-  }
-  memoriaUsuarios[numero].modoSussurro = ativar;
-  salvarMemoria();
-  const status = ativar ? "ativado" : "desativado";
-  await enviarMensagemWhatsApp(numero, `Modo sussurro ${status}.`);
-}
