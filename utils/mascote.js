@@ -23,7 +23,10 @@ export const mascote = {
       "Senti sua falta! Vamos brincar com números? 💛",
       "Ei, cadê você? Vamos aprender juntos! 📚",
       "Volte logo, tá? Você é meu parceiro de aventura! 😊"
-    ]
+    ],
+    portugues: ["Você dominou as palavras como um poeta 💬!"],
+    ciencias: ["Uau! Quanta ciência no seu cérebro 🔬!"],
+    historia: ["Explorador da História desbloqueado 🏛️!"]
   }
 };
 
