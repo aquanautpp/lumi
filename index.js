@@ -48,9 +48,9 @@ app.post('/webhook', async (req, res) => {
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
-  const texto = message.text?.body?.trim() || '';
-  const textoLower = texto.toLowerCase();
-   const textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let texto = message.text?.body?.trim() || '';
+  let textoLower = texto.toLowerCase();
+  let textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   // Primeira interação: perguntar o nome que o usuário quer usar
   if (!memoriaUsuarios[from]) {
@@ -65,6 +65,14 @@ app.post('/webhook', async (req, res) => {
   }
 
   const usuario = memoriaUsuarios[from];
+   if (usuario.menuAtual && /^[1-3]$/.test(texto)) {
+    const opcao = usuario.menuAtual[parseInt(texto) - 1];
+    if (opcao) {
+      texto = opcao.body;
+      textoLower = texto.toLowerCase();
+      textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+  }
   usuario.historico = usuario.historico || [];
 
   if (usuario.etapaCadastro === 'nome') {
@@ -117,13 +125,14 @@ if (desafiosPendentes[from]) {
   atualizarMemoria(from, desafio.categoria, resultado.acertou, texto, desafio.resposta);
 
   const estilo = usuario.estilo?.tipo || null;
- if (resultado.acertou) {
+    if (resultado.acertou) {
      registrarDesafioResolvido(desafio);
     const feedback = gerarFeedback(true, estilo);
     await enviarMensagemWhatsApp(from, feedback);
     const msgNivel = verificarNivel(usuario);
     if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
     delete desafiosPendentes[from];
+      await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
   } else if (resultado.dica) {
     await enviarMensagemWhatsApp(from, resultado.dica);
   } else if (resultado.explicacao) {
@@ -132,6 +141,7 @@ if (desafiosPendentes[from]) {
     const feedback = gerarFeedback(false, estilo);
     await enviarMensagemWhatsApp(from, feedback);
     delete desafiosPendentes[from];
+      await enviarMensagemWhatsApp(from, 'O que você deseja fazer agora?', comandosRapidos);
   }
 
   salvarMemoria();
