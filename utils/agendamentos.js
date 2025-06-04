@@ -9,7 +9,7 @@ const desafiosFamilia = [
 ];
 
 function agendarEnvioRelatorios() {
-  cron.schedule('0 9 * * 1', async () => {
+ cron.schedule('0 9 * * 0', async () => {
     console.log('📅 Enviando relatórios semanais...');
     for (const [numero, usuario] of Object.entries(memoriaUsuarios)) {
       const caminho = `tmp/relatorio-${numero}.pdf`;
