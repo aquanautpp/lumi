@@ -31,7 +31,11 @@ function carregarDesafiosPendentes() {
   }
 }
 
-function salvarMemoria() {
+async function salvarMemoria() {
+  if (process.env.DB_TYPE === 'sqlite') {
+    await salvarDb(global.memoriaUsuarios);
+    return;
+  }
   try {
     fs.writeFileSync(MEMORIA_ARQUIVO, JSON.stringify(global.memoriaUsuarios, null, 2));
   } catch (err) {
