@@ -1,6 +1,6 @@
 import { salvarMemoria, memoriaUsuarios } from './memoria.js';
 
-function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaCorreta, enunciado) {
+async function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaCorreta, enunciado) {
   if (!memoriaUsuarios[numero]) {
     memoriaUsuarios[numero] = {
       nome: null,
@@ -28,7 +28,7 @@ function atualizarMemoria(numero, categoria, acertou, respostaUsuario, respostaC
     }
   }
 
-  salvarMemoria();
+  await salvarMemoria();
 }
 
 export { atualizarMemoria };
