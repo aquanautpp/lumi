@@ -40,8 +40,9 @@ export async function processarRespostaEstilo(numero, texto) {
 
   const resp = texto.trim().toLowerCase();
   let valor = null;
-  if (/^[1-5]$/.test(resp)) {
-    valor = parseInt(resp, 10);
+  const numeroMatch = resp.match(/^([1-5])\s*[.!?]?$/);
+  if (numeroMatch) {
+    valor = parseInt(numeroMatch[1], 10);
   } else if (resp === 'sim') {
     valor = 5;
   } else if (resp === 'não' || resp === 'nao') {
