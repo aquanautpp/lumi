@@ -24,8 +24,10 @@ export async function aplicarPerguntaEstilo(numero) {
   if (proxima) {
     usuario.estilo.perguntaAtual = proxima.id;
     salvarMemoria();
-    await enviarMensagemWhatsApp(numero, `👩‍🏫 Perguntinha rápida!
-${proxima.texto}\n\nResponda com SIM ou NÃO 😉`);
+  await enviarMensagemWhatsApp(
+      numero,
+      `👩‍🏫 Perguntinha rápida!\n${proxima.texto}\n\nResponda de 1 (discordo totalmente) a 5 (concordo totalmente)`
+    );
   }
 }
 
@@ -34,21 +36,30 @@ export async function processarRespostaEstilo(numero, texto) {
   if (!usuario?.estilo || usuario.estilo.concluido) return false;
 
   const id = usuario.estilo.perguntaAtual;
-  const resposta = texto.trim().toLowerCase();
-  if (!id || !["sim", "não", "nao"].includes(resposta)) return false;
+ if (!id) return false;
 
-  const pergunta = perguntasEstilo.find(p => p.id === id);
-  if (!pergunta) return false;
-
-  if (resposta === "sim") {
-    usuario.estilo.respostas[pergunta.estilo] = (usuario.estilo.respostas[pergunta.estilo] || 0) + 1;
+  const resp = texto.trim().toLowerCase();
+  let valor = null;
+  if (/^[1-5]$/.test(resp)) {
+    valor = parseInt(resp, 10);
+  } else if (resp === 'sim') {
+    valor = 5;
+  } else if (resp === 'não' || resp === 'nao') {
+    valor = 1;
+  } else {
+    return false;
   }
 
+  usuario.estilo.respostas[id] = valor;
   delete usuario.estilo.perguntaAtual;
-  const total = Object.values(usuario.estilo.respostas).reduce((a, b) => a + b, 0);
-
-  if (total >= 3) {
-    const estiloDominante = Object.entries(usuario.estilo.respostas).sort((a, b) => b[1] - a[1])[0][0];
+  
+   if (Object.keys(usuario.estilo.respostas).length >= perguntasEstilo.length) {
+    const pontuacoes = {};
+    for (const [pid, val] of Object.entries(usuario.estilo.respostas)) {
+      const p = perguntasEstilo.find(q => q.id === parseInt(pid));
+      pontuacoes[p.estilo] = (pontuacoes[p.estilo] || 0) + val;
+    }
+    const estiloDominante = Object.entries(pontuacoes).sort((a, b) => b[1] - a[1])[0][0];
     usuario.estilo.tipo = estiloDominante;
     usuario.estilo.concluido = true;
 
@@ -67,4 +78,24 @@ ${mensagens[estiloDominante]}`);
 
   salvarMemoria();
   return true;
+}
+
+export async function iniciarQuizAutomatico(numero) {
+  const usuario = memoriaUsuarios[numero];
+  if (!usuario) return false;
+
+  usuario.estilo = usuario.estilo || { respostas: {}, concluido: false };
+
+  const interacoes = usuario.interacoes || 0;
+  if (
+    interacoes >= 5 &&
+    interacoes <= 8 &&
+    !usuario.estilo.concluido &&
+    !usuario.estilo.perguntaAtual &&
+    Object.keys(usuario.estilo.respostas).length === 0
+  ) {
+    await aplicarPerguntaEstilo(numero);
+    return true;
+  }
+  return false;
 }
