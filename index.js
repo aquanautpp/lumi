@@ -10,7 +10,7 @@ import { generatePdfReport } from './utils/pdfReport.js';
 import { uploadPdfToCloudinary } from './utils/cloudinary.js';
 import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
-import { verificarNivel } from './utils/niveis.js';
+import { verificarNivel, obterNivel } from './utils/niveis.js';
 import { validarResposta, validarTentativas } from './utils/validacao.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
@@ -129,7 +129,16 @@ if (desafiosPendentes[from]) {
     }
     return res.sendStatus(200);
   }
-
+  
+ if (textoLower.includes('qual meu nivel') || textoLower.includes('qual meu nível')) {
+    const acertos = usuario.historico?.filter(h => h.acertou).length || 0;
+    const infoNivel = obterNivel(acertos);
+    usuario.nivelAtual = infoNivel.nivel;
+    salvarMemoria();
+    await enviarMensagemWhatsApp(from, `Seu nível atual é ${infoNivel.nivel}: ${infoNivel.recompensa}`);
+    return res.sendStatus(200);
+  }
+  
   if (textoLower.includes('missao') || textoLower.includes('missão')) {
     if (!missoesPendentes[from]) {
       const estilo = usuario.estilo?.tipo || null;
