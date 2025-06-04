@@ -41,5 +41,35 @@ function validarResposta(respostaUsuario, respostaCorreta, sinonimos = []) {
   return respostasAceitaveis.includes(usuarioNormalizado);
 }
 
-export { validarResposta };
+function validarTentativas(respostaUsuario, desafio) {
+  desafio.tentativas = (desafio.tentativas || 0) + 1;
+
+  const acertou = validarResposta(
+    respostaUsuario,
+    desafio.resposta,
+    desafio.sinonimos || []
+  );
+
+  if (acertou) {
+    return { acertou: true };
+  }
+
+  const dicasPadrao = [
+    '🤔 Pense com calma e tente novamente!',
+    '💡 Observe bem a pergunta, a resposta está pertinho!',
+    '🎲 Não desista! Tente mais uma vez!'
+  ];
+
+  if (desafio.tentativas < 3) {
+    const dicas = desafio.dicas || dicasPadrao;
+    const indice = (desafio.tentativas - 1) % dicas.length;
+    return { acertou: false, dica: dicas[indice] };
+  }
+
+  const explicacao =
+    desafio.explicacao || `A resposta correta é ${desafio.resposta}.`;
+  return { acertou: false, explicacao };
+}
+
+export { validarResposta, validarTentativas };
 // feat: adiciona função de validação de respostas com sinônimos
