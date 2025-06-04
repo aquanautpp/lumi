@@ -71,18 +71,34 @@ app.post('/webhook', async (req, res) => {
 // Processa resposta do desafio pendente
 if (desafiosPendentes[from]) {
   const desafio = desafiosPendentes[from];
-  const acertou = validarResposta(texto, desafio.resposta, desafio.sinonimos || []);
-  atualizarMemoria(from, desafio.categoria, acertou, texto, desafio.resposta);
 
-  const estilo = usuario.estilo?.tipo || null;
-  const feedback = gerarFeedback(acertou, estilo);
-  await enviarMensagemWhatsApp(from, feedback);
-  if (acertou) {
-    const msgNivel = verificarNivel(usuario);
-    if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+  if (textoLower.includes('qual a explicação')) {
+    const msg = desafio.explicacao || `A resposta correta é ${desafio.resposta}.`;
+    await enviarMensagemWhatsApp(from, msg);
+    delete desafiosPendentes[from];
+    salvarMemoria();
+    return res.sendStatus(200);
   }
 
-  delete desafiosPendentes[from];
+  const resultado = validarTentativas(texto, desafio);
+  atualizarMemoria(from, desafio.categoria, resultado.acertou, texto, desafio.resposta);
+
+  const estilo = usuario.estilo?.tipo || null;
+ if (resultado.acertou) {
+    const feedback = gerarFeedback(true, estilo);
+    await enviarMensagemWhatsApp(from, feedback);
+    const msgNivel = verificarNivel(usuario);
+    if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+    delete desafiosPendentes[from];
+  } else if (resultado.dica) {
+    await enviarMensagemWhatsApp(from, resultado.dica);
+  } else if (resultado.explicacao) {
+    await enviarMensagemWhatsApp(from, resultado.explicacao);
+    const feedback = gerarFeedback(false, estilo);
+    await enviarMensagemWhatsApp(from, feedback);
+    delete desafiosPendentes[from];
+  }
+
   salvarMemoria();
   return res.sendStatus(200);
 }
@@ -130,7 +146,7 @@ if (desafiosPendentes[from]) {
     const estilo = usuario.estilo?.tipo || null;
     const hoje = obterDesafioDoDia();
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo(hoje.categoria, estilo) : escolherDesafioPorCategoria(hoje.categoria);
-    desafiosPendentes[from] = desafio ? { ...desafio, categoria: hoje.categoria } : null;
+      desafiosPendentes[from] = desafio ? { ...desafio, categoria: hoje.categoria, tentativas: 0 } : null;
     salvarMemoria();
     if (!desafio) {
       await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*, mas não encontrei um desafio agora. Me peça um desafio com outra categoria!`);
