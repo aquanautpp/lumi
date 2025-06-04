@@ -24,16 +24,23 @@ import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo, iniciarQuizAutomatico } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
 import { agendarEnvioRelatorios, agendarDesafiosFamilia } from './utils/agendamentos.js';
+import { enviarDesafioFamilia } from './utils/desafioFamilia.js';
+import { enviarDesafioVidaReal } from './utils/desafiosVidaReal.js';
+import { enviarJogoVisual } from './utils/jogosVisuais.js';
+import { iniciarAventura, enviarDesafioAventura } from './utils/aventura.js';
 
 dotenv.config();
 
-const requiredVars = ['WHATSAPP_TOKEN', 'FROM_PHONE_ID', 'OPENAI_API_KEY'];
-for (const v of requiredVars) {
-  if (!process.env[v]) {
-    console.error(`❌ Variável de ambiente obrigatória ausente: ${v}`);
+function validateEnv() {
+  const required = ['WHATSAPP_TOKEN', 'PHONE_ID', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
+  const missing = required.filter(v => !process.env[v]);
+  if (missing.length) {
+    console.error('Missing environment variables: ' + missing.join(', '));
     process.exit(1);
   }
 }
+
+validateEnv();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,14 +48,12 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-
-  if (token === VERIFY_TOKEN) {
+  if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
     return res.status(200).send(challenge);
   }
-
   return res.sendStatus(403);
 });
 
@@ -75,6 +80,9 @@ const comandosDetalhados = [
   "'Qual meu nível?' - Ver seu progresso",
   "'Relatório' - PDF com seu desempenho",
   "'Desafio em família' - Atividade em grupo",
+  "'Desafio da vida real' - Tarefas para fazer em casa",
+  "'Jogo visual' - Brincar com imagens",
+  "'Aventura' - Desafio temático",
   "'Charada' - Enviar uma charada divertida",
   "'Parar' - Cancelar missões ou desafios"
 ];
@@ -352,6 +360,33 @@ if (desafiosPendentes[from]) {
     return res.sendStatus(200);
   }
 
+ if (textoLower.includes('desafio em familia') || textoLower.includes('desafio em família')) {
+    await enviarDesafioFamilia(from);
+    return res.sendStatus(200);
+  }
+
+  if (textoLower.includes('desafio da vida real')) {
+    await enviarDesafioVidaReal(from);
+    return res.sendStatus(200);
+  }
+
+  if (textoLower.includes('jogo visual')) {
+    await enviarJogoVisual(from);
+    return res.sendStatus(200);
+  }
+
+  if (textoLower.includes('aventura')) {
+    if (!memoriaUsuarios[from]?.aventura) iniciarAventura(from);
+    const msg = enviarDesafioAventura(from);
+    if (msg) {
+      await enviarMensagemWhatsApp(from, msg);
+    } else {
+      await enviarMensagemWhatsApp(from, 'Não há mais etapas de aventura disponíveis.');
+    }
+    return res.sendStatus(200);
+  }
+
+  
   if (textoLower.includes("charada")) {
     const estilo = usuario.estilo?.tipo || null;
     const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo("charada", estilo, from) : escolherDesafioPorCategoria("charada", from);
