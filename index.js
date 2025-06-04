@@ -10,7 +10,6 @@ import {
   desafiosPendentes,
   missoesPendentes,
   salvarMemoria,
-  alternarModoSussurro,
   definirNome,
   definirMascote
 } from './utils/memoria.js';
@@ -40,6 +39,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
+
+app.get('/webhook', (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+
+  if (token === VERIFY_TOKEN) {
+    return res.status(200).send(challenge);
+  }
+
+  return res.sendStatus(403);
+});
 
 const comandosRapidos = [
   { title: "📚 Missão do Dia", body: "Quero a missão do dia" },
@@ -332,9 +343,13 @@ if (desafiosPendentes[from]) {
   res.sendStatus(200);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Lumi está rodando na porta ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Lumi está rodando na porta ${PORT}`);
+  });
 
-agendarEnvioRelatorios();
-agendarDesafiosFamilia();
+  agendarEnvioRelatorios();
+  agendarDesafiosFamilia();
+}
+
+export default app;
