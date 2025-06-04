@@ -45,7 +45,7 @@ export function getEtapaAtual(numero) {
 export function enviarDesafioAventura(numero) {
   const etapa = getEtapaAtual(numero);
   if (etapa) {
-    const desafio = selecionarDesafioPorCategoriaEEstilo(etapa.desafio.categoria, etapa.desafio.tipo);
+    const desafio = selecionarDesafioPorCategoriaEEstilo(etapa.desafio.categoria, etapa.desafio.tipo, numero);
     if (desafio) {
       desafiosPendentes[numero] = desafio;
       salvarMemoria();
