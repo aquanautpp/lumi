@@ -3,6 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
+import fs from 'fs';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from './utils/whatsapp.js';
 import { selecionarDesafioPorCategoriaEEstilo, escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido } from './utils/desafios.js';
 import { memoriaUsuarios, desafiosPendentes, missoesPendentes, salvarMemoria, alternarModoSussurro } from './utils/memoria.js';
@@ -132,12 +133,21 @@ if (desafiosPendentes[from]) {
     return res.sendStatus(200);
   }
   
- if (textoLower.includes('qual meu nivel') || textoLower.includes('qual meu nível')) {
+  if (textoLower.includes('qual meu nivel') || textoLower.includes('qual meu nível')) {
     const acertos = usuario.historico?.filter(h => h.acertou).length || 0;
     const infoNivel = obterNivel(acertos);
     usuario.nivelAtual = infoNivel.nivel;
     salvarMemoria();
     await enviarMensagemWhatsApp(from, `Seu nível atual é ${infoNivel.nivel}: ${infoNivel.recompensa}`);
+    return res.sendStatus(200);
+  }
+
+  if (textoLower.includes('relatorio') || textoLower.includes('relatório')) {
+    if (!fs.existsSync('tmp')) fs.mkdirSync('tmp');
+    const caminho = `tmp/relatorio-${from}.pdf`;
+    generatePdfReport({ nome: usuario.nome || 'Aluno', numero: from, progresso: usuario.historico || [], caminho });
+    const urlPdf = await uploadPdfToCloudinary(caminho);
+    await enviarMidiaWhatsApp(from, urlPdf, 'document');
     return res.sendStatus(200);
   }
   
