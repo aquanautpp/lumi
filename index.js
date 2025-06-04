@@ -61,7 +61,7 @@ function enviarListaComandos(numero) {
 function enviarBoasVindas(numero) {
   return enviarMensagemWhatsApp(
     numero,
-    "Oi, eu sou a Lumi 💛. Se precisar de ajuda, digite 'menu'.",
+    "Oi, eu sou a Lumi 💛. Se quiser saber tudo o que posso fazer, peça o 'menu'.",
     comandosRapidos
   );
 }
@@ -304,26 +304,15 @@ if (desafiosPendentes[from]) {
     return res.sendStatus(200);
   }
 
-  if (["charada", "imagem"].some(p => textoLower.includes(p))) {
-      let desafioEncontrado = null;
-    let categoriaImagem = null;
-    for (const cat of Object.keys(desafios)) {
-      const possivel = desafios[cat].find(d => d.tipo === 'image');
-      if (possivel) {
-        desafioEncontrado = possivel;
-        categoriaImagem = cat;
-        break;
-      }
-    }
-    if (desafioEncontrado) {
-     desafiosPendentes[from] = { ...desafioEncontrado, categoria: categoriaImagem, tentativas: 0 };
+  if (textoLower.includes("charada")) {
+    const estilo = usuario.estilo?.tipo || null;
+    const desafio = estilo ? selecionarDesafioPorCategoriaEEstilo("charada", estilo, from) : escolherDesafioPorCategoria("charada", from);
+    if (desafio) {
+      desafiosPendentes[from] = { ...desafio, categoria: "charada", tentativas: 0 };
       salvarMemoria();
-      await enviarMensagemWhatsApp(from, `🔍 Charada visual:
-
-${desafioEncontrado.enunciado}`);
-      if (desafioEncontrado.midia) await enviarMidiaWhatsApp(from, desafioEncontrado.midia, desafioEncontrado.tipo);
+         await enviarMensagemWhatsApp(from, `🧩 Charada:\n\n${desafio.enunciado}`);
     } else {
-      await enviarMensagemWhatsApp(from, 'Ainda não tenho uma charada visual no momento! 😕');
+    await enviarMensagemWhatsApp(from, "Não encontrei uma charada agora. Tente mais tarde!");
     }
     return res.sendStatus(200);
   }
