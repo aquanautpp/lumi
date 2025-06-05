@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Parser } from 'json2csv';
+import { atualizarSheet } from './googleSheets.js';
 import xlsx from 'xlsx';
 
 const USUARIOS_PATH = 'usuarios.json';
@@ -175,4 +176,27 @@ export function exportarParaExcel() {
   xlsx.utils.book_append_sheet(wb, wsResumo, 'Resumo');
 
   xlsx.writeFile(wb, 'usuarios.xlsx');
+}
+
+export async function exportarParaGoogleSheets() {
+  const usuarios = carregarUsuarios();
+  const cabecalho = ['ID','Nome','Estilo','Nível','Total Desafios','Acertos','Erros','Última Atividade'];
+  const linhas = [cabecalho];
+  for (const u of Object.values(usuarios)) {
+    const total = u.desafiosConcluidos.length;
+    const ultima = total ? u.desafiosConcluidos[total - 1].data : '';
+    linhas.push([
+      u.id,
+      u.nome || '',
+      u.estiloAprendizagem || '',
+      u.nivelAtual,
+      total,
+      u.totalAcertos,
+      u.totalErros,
+      ultima
+    ]);
+  }
+  const sheetId = process.env.GOOGLE_SHEETS_ID;
+  if (!sheetId) throw new Error('GOOGLE_SHEETS_ID não definido');
+  await atualizarSheet(sheetId, 'Usuarios!A1', linhas);
 }
