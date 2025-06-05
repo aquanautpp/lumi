@@ -47,7 +47,7 @@ export function enviarDesafioAventura(numero) {
   if (etapa) {
     const desafio = selecionarDesafioPorCategoriaEEstilo(etapa.desafio.categoria, etapa.desafio.tipo, numero);
     if (desafio) {
-      desafiosPendentes[numero] = desafio;
+      desafiosPendentes[numero] = { ...desafio, categoria: etapa.desafio.categoria, tentativas: 0 };
       salvarMemoria();
       return `🌟 *${etapa.introducao}*\n\n🧠 ${desafio.enunciado}`;
     }
