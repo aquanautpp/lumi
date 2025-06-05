@@ -17,6 +17,7 @@ import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel, obterNivel } from './utils/niveis.js';
 import { validarResposta, validarTentativas } from './utils/validacao.js';
+import { exportarParaGoogleSheets } from './utils/analytics.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
@@ -109,6 +110,16 @@ app.get('/admin', (req, res) => {
     historico: (dados.historico || []).length
   }));
   res.json({ usuarios });
+});
+
+app.get("/admin/export", async (req, res) => {
+  try {
+    await exportarParaGoogleSheets();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Falha ao exportar" });
+  }
 });
 
 app.post('/webhook', async (req, res) => {
