@@ -251,6 +251,8 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
         missoesPendentes[from] = { desafios: missao, atual: 0 };
         await salvarMemoria();
         const primeiro = missao[0];
+        desafiosPendentes[from] = { ...primeiro, categoria: primeiro.categoria, tentativas: 0 };
+        await salvarMemoria();
         await enviarMensagemWhatsApp(from, `📘 Missão do Dia! Categoria: ${primeiro.categoria}
 
 🧠 ${primeiro.enunciado}`);
@@ -270,14 +272,13 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     const estilo = usuario.estilo?.tipo || null;
     const hoje = obterDesafioDoDia(undefined, null, from);
     const desafio = escolherDesafioPorCategoria(hoje.categoria, from, estilo);
-    await salvarMemoria();
     if (!desafio) {
       await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*, mas não encontrei um desafio agora. Me peça um desafio com outra categoria!`);
       return res.sendStatus(200);
     }
-    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!
-
-🧠 ${desafio.enunciado}`);
+    desafiosPendentes[from] = { ...desafio, categoria: hoje.categoria, tentativas: 0 };
+    await salvarMemoria();
+    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n🧠 ${desafio.enunciado}`);
     if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
     return res.sendStatus(200);
   }
