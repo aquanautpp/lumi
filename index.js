@@ -21,7 +21,6 @@ import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/estiloAprendizagem.js';
 import { gerarRespostaIA } from './utils/ia.js';
-import { agendarDesafiosFamilia } from './utils/agendamentos.js';
 import { enviarDesafioFamilia } from './utils/desafioFamilia.js';
 import { enviarDesafioVidaReal } from './utils/desafiosVidaReal.js';
 import { iniciarAventura, enviarDesafioAventura } from './utils/aventura.js';
@@ -408,7 +407,6 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`🚀 Lumi está rodando na porta ${PORT}`);
   });
 
-  agendarDesafiosFamilia();
 }
 
 export default app;
