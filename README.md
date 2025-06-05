@@ -48,3 +48,6 @@ Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
 ## Testes
 
 Os testes utilizam Jest. Rode `npm test` para executá-los.
+## Exportação de dados
+Preencha `GOOGLE_SHEETS_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL` e `GOOGLE_PRIVATE_KEY` no arquivo `.env` para habilitar a exportação para o Google Sheets.
+Acesse `/admin/export` para enviar as métricas dos usuários para a aba `Usuarios` da planilha.
