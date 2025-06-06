@@ -30,8 +30,11 @@ dotenv.config();
 
 function validateEnv() {
   if (process.env.NODE_ENV === 'test') return;
-  const required = ['WHATSAPP_TOKEN', 'PHONE_ID', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
+  const required = ['WHATSAPP_TOKEN', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
   const missing = required.filter(v => !process.env[v]);
+    if (!process.env.PHONE_ID && !process.env.FROM_PHONE_ID) {
+    missing.push('PHONE_ID');
+  }
   if (missing.length) {
     console.error('Missing environment variables: ' + missing.join(', '));
     process.exit(1);
