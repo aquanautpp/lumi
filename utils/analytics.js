@@ -1,23 +1,26 @@
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import { Parser } from 'json2csv';
 import { atualizarSheet } from './googleSheets.js';
 import xlsx from 'xlsx';
 
 const USUARIOS_PATH = 'usuarios.json';
 
-function carregarUsuarios() {
-  if (fs.existsSync(USUARIOS_PATH)) {
-    return JSON.parse(fs.readFileSync(USUARIOS_PATH));
+async function carregarUsuarios() {
+  try {
+    await fs.access(USUARIOS_PATH);
+    const data = await fs.readFile(USUARIOS_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return {};
+}
   }
-  return {};
+
+async function salvarUsuarios(usuarios) {
+  await fs.writeFile(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
 }
 
-function salvarUsuarios(usuarios) {
-  fs.writeFileSync(USUARIOS_PATH, JSON.stringify(usuarios, null, 2));
-}
-
-export function registrarAtividade(id, tipo, categoria, resultado) {
-  const usuarios = carregarUsuarios();
+export async function registrarAtividade(id, tipo, categoria, resultado) {
+  const usuarios = await carregarUsuarios();
   const hoje = new Date().toISOString().split('T')[0];
 
   if (!usuarios[id]) {
@@ -49,12 +52,12 @@ export function registrarAtividade(id, tipo, categoria, resultado) {
     usuario.diasAtivos.push(hoje);
   }
 
-  salvarUsuarios(usuarios);
+  await salvarUsuarios(usuarios);
   return usuario;
 }
 
-export function gerarResumoUsuario(id) {
-  const usuarios = carregarUsuarios();
+export async function gerarResumoUsuario(id) {
+  const usuarios = await carregarUsuarios();
   const usuario = usuarios[id];
   if (!usuario) return null;
 
@@ -84,8 +87,8 @@ export function gerarResumoUsuario(id) {
   };
 }
 
-export function gerarAnalyticsGlobal() {
-  const usuarios = carregarUsuarios();
+export async function gerarAnalyticsGlobal() {
+  const usuarios = await carregarUsuarios();
   const ids = Object.keys(usuarios);
   if (!ids.length) return null;
 
@@ -134,8 +137,8 @@ export function gerarAnalyticsGlobal() {
   };
 }
 
-export function gerarCSVMetricas() {
-  const usuarios = carregarUsuarios();
+export async function gerarCSVMetricas() {
+  const usuarios = await carregarUsuarios();
   const linhas = Object.values(usuarios).map(u => {
     const total = u.desafiosConcluidos.length;
     const percentual = total ? ((u.totalAcertos / total) * 100).toFixed(2) : '0';
@@ -154,11 +157,11 @@ export function gerarCSVMetricas() {
 
   const parser = new Parser({ delimiter: ';' });
   const csv = parser.parse(linhas);
-  fs.writeFileSync('metricas.csv', csv);
+  await fs.writeFile('metricas.csv', csv);
 }
 
-export function exportarParaExcel() {
-  const usuarios = carregarUsuarios();
+export async function exportarParaExcel() {
+  const usuarios = await carregarUsuarios();
   const wb = xlsx.utils.book_new();
 
   for (const u of Object.values(usuarios)) {
@@ -171,7 +174,7 @@ export function exportarParaExcel() {
     xlsx.utils.book_append_sheet(wb, ws, u.id.toString());
   }
 
-  const resumo = gerarAnalyticsGlobal();
+  const resumo = await gerarAnalyticsGlobal();
   const wsResumo = xlsx.utils.json_to_sheet([resumo]);
   xlsx.utils.book_append_sheet(wb, wsResumo, 'Resumo');
 
@@ -179,7 +182,7 @@ export function exportarParaExcel() {
 }
 
 export async function exportarParaGoogleSheets() {
-  const usuarios = carregarUsuarios();
+  const usuarios = await carregarUsuarios();
   const cabecalho = ['ID','Nome','Estilo','Nível','Total Desafios','Acertos','Erros','Última Atividade'];
   const linhas = [cabecalho];
   for (const u of Object.values(usuarios)) {
