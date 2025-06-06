@@ -60,15 +60,22 @@ const comandosRapidos = [
   { title: "❓Quem é você?", body: "Quem é você?" }
 ];
 
-const LIMITE_INTERACOES = 40;
-const MENSAGEM_FINAL =
-  "🌟 Essa é só uma versão de teste, e por aqui a nossa aventura termina… por enquanto!\n" +
-  "Mas eu tenho uma pergunta importante:\n" +
-  "Você gostaria de brincar com a versão oficial da Lumi? 💛";
+
 const OPCOES_FINAIS = [
-  { title: "Quero sim! 🌈", body: "Quero sim! 🌈" },
-  { title: "Não por enquanto 🤔", body: "Não por enquanto 🤔" }
+  { title: "✅ Sim!", body: "Sim!" },
+  { title: "❌ Não por enquanto", body: "Não por enquanto" }
 ];
+
+function enviarMensagemFinalDeTeste(numero) {
+  const mensagem =
+    "🌟 Você chegou ao fim do modo de teste! Aqui vão algumas dicas para aprender melhor:\n" +
+    "1️⃣ Faça perguntas sempre que ficar curioso.\n" +
+    "2️⃣ Explique o que aprendeu para alguém.\n" +
+    "3️⃣ Crie desenhos ou mapas para suas ideias.\n" +
+    "Que tal ler o livro 'Como um Cientista Aprende'?\n\n" +
+    "Você gostaria de brincar com a versão oficial da Lumi?";
+  return enviarMensagemWhatsApp(numero, mensagem, OPCOES_FINAIS);
+}
 
 const comandosDetalhados = [
 "📚 'Quero a missão do dia' - Receber três desafios especiais",
@@ -168,10 +175,15 @@ app.post('/webhook', async (req, res) => {
   }
   
   if (usuario.aguardandoRespostaFinal) {
-    usuario.respostaFinal = texto;
     usuario.aguardandoRespostaFinal = false;
-    usuario.bloqueado = true;
-    salvarMemoria();
+    usuario.respostaFinal = texto;
+    if (textoSemAcento.includes('sim')) {
+      await enviarMensagemWhatsApp(from, 'Oba! Aqui está o menu principal:', comandosRapidos);
+    } else {
+      usuario.bloqueado = true;
+      await enviarMensagemWhatsApp(from, 'Tudo bem! Estarei por aqui quando quiser voltar 💜');
+    }
+    await salvarMemoria();
     return res.sendStatus(200);
   }
   usuario.historico = usuario.historico || [];
@@ -204,10 +216,10 @@ app.post('/webhook', async (req, res) => {
   if (respondeuEstilo) return res.sendStatus(200);
 
   usuario.interacoes = (usuario.interacoes || 0) + 1;
-    if (usuario.interacoes >= LIMITE_INTERACOES) {
+  if (usuario.interacoes >= LIMITE_INTERACOES) {
     usuario.aguardandoRespostaFinal = true;
-    salvarMemoria();
-    await enviarMensagemWhatsApp(from, MENSAGEM_FINAL, OPCOES_FINAIS);
+    await salvarMemoria();
+    await enviarMensagemFinalDeTeste(from);
     return res.sendStatus(200);
   }
   await salvarMemoria();
