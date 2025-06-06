@@ -69,6 +69,21 @@ const OPCOES_FINAIS = [
   { title: "❌ Não por enquanto", body: "Não por enquanto" }
 ];
 
+function extrairTexto(message) {
+  if (message.text?.body) return message.text.body.trim();
+  const inter = message.interactive;
+  if (inter?.button_reply) return inter.button_reply.id || inter.button_reply.title;
+  if (inter?.list_reply) return inter.list_reply.id || inter.list_reply.title;
+  return '';
+}
+
+function normalizarTexto(texto) {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 function enviarMensagemFinalDeTeste(numero) {
   const mensagem =
     "🌟 Você chegou ao fim do modo de teste! Aqui vão algumas dicas para aprender melhor:\n" +
@@ -137,20 +152,9 @@ app.post('/webhook', async (req, res) => {
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
-  let texto = '';
-  if (message.text?.body) {
-    texto = message.text.body.trim();
-  } else if (message.interactive) {
-    const inter = message.interactive;
-    if (inter.button_reply) {
-      texto = inter.button_reply.id || inter.button_reply.title;
-    } else if (inter.list_reply) {
-      texto = inter.list_reply.id || inter.list_reply.title;
-    }
-  }
-
+  let texto = extrairTexto(message);
   let textoLower = texto.toLowerCase();
-  let textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let textoSemAcento = normalizarTexto(texto);
 
   // Primeira interação: perguntar o nome que o usuário quer usar
   if (!memoriaUsuarios[from]) {
@@ -173,7 +177,7 @@ app.post('/webhook', async (req, res) => {
     if (opcao) {
       texto = opcao.body;
       textoLower = texto.toLowerCase();
-      textoSemAcento = textoLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      textoSemAcento = normalizarTexto(texto);
     }
   }
   
