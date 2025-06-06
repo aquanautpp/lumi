@@ -2,7 +2,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 
 dotenv.config();
 
@@ -72,7 +72,7 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
        return enviarMensagemWhatsApp(numero, mensagem, opcoes, tentativa + 1);
     }
     const log = `[${new Date().toISOString()}] Falha para ${numero}: ${mensagem} - Erro: ${erro.response?.data?.error?.message || erro.message}\n`;
-    fs.appendFileSync(LOG_PATH, log);
+    await fs.appendFile(LOG_PATH, log);
     console.error(`❌ Erro ao enviar mensagem (tentativa ${tentativa}) para ${numero}:`, erro.response?.data || erro.message);
     throw erro;
   }
@@ -99,7 +99,7 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
     return resposta.data;
   } catch (erro) {
     const log = `[${new Date().toISOString()}] Falha de mídia para ${numero}: ${urlArquivo} - Erro: ${erro.response?.data?.error?.message || erro.message}\n`;
-    fs.appendFileSync(LOG_PATH, log);
+    await fs.appendFile(LOG_PATH, log);
     console.error('❌ Erro ao enviar mídia:', erro.response?.data || erro.message);
     throw erro;
   }
