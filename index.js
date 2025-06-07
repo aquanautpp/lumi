@@ -51,6 +51,7 @@ const LIMITE_INTERACOES = parseInt(
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get('/webhook', (req, res) => {
@@ -153,7 +154,17 @@ app.get("/admin/export", async (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
-  const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
+  if (!message && req.body.Body && req.body.From) {
+    const from = req.body.From.replace(/^whatsapp:/, '');
+    const texto = req.body.Body || '';
+    const resposta = await gerarRespostaIA(texto);
+    const xml = `<Response><Message>${resposta}</Message></Response>`;
+    res.set('Content-Type', 'text/xml');
+    return res.send(xml);
+  }
+
   if (!message) return res.sendStatus(200);
 
   const from = message.from;
