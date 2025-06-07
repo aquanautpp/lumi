@@ -30,6 +30,13 @@ npm start
 
 O webhook ficará disponível na porta definida em `PORT` (padrão 3000).
 
+### Usando o Twilio Sandbox
+
+Para testes no Twilio WhatsApp Sandbox, preencha também as variáveis
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` e `TWILIO_NUMBER` no `.env`.
+Com elas definidas, o endpoint `/webhook` aceita mensagens do Twilio e responde
+com TwiML.
+
 ## Comandos
 
 Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
