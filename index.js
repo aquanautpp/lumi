@@ -165,16 +165,40 @@ app.get("/admin/export", async (req, res) => {
   }
 });
 
-app.post('/webhook', async (req, res) => {
-  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+function escapeXml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
-  if (!message && req.body.Body && req.body.From) {
-    const from = req.body.From.replace(/^whatsapp:/, '');
-    const texto = req.body.Body || '';
-    const resposta = await gerarRespostaIA(texto);
-    const xml = `<Response><Message>${resposta}</Message></Response>`;
+app.post('/webhook', async (req, res) => {
+  global.__twiMLMessages = [];
+
+  const sendTwiml = () => {
+    const msgs = global.__twiMLMessages.map(m => {
+      const body = escapeXml(m.body || '');
+      return m.media
+        ? `<Message><Body>${body}</Body><Media>${m.media}</Media></Message>`
+        : `<Message>${body}</Message>`;
+    }).join('');
     res.set('Content-Type', 'text/xml');
-    return res.send(xml);
+    return res.status(200).send(`<Response>${msgs}</Response>`);
+  };
+
+  const originalSendStatus = res.sendStatus.bind(res);
+  res.sendStatus = code => {
+    if (code === 200) return sendTwiml();
+    return originalSendStatus(code);
+  };
+
+  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
+  if (!message && req.body.From && req.body.Body) {
+    message = {
+      from: req.body.From.replace(/^whatsapp:/, ''),
+      text: { body: req.body.Body }
+    };
   }
 
   if (!message) return res.sendStatus(200);
