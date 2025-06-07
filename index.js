@@ -30,11 +30,23 @@ dotenv.config();
 
 function validateEnv() {
   if (process.env.NODE_ENV === 'test') return;
-  const required = ['WHATSAPP_TOKEN', 'VERIFY_TOKEN', 'OPENAI_API_KEY'];
-  const missing = required.filter(v => !process.env[v]);
-    if (!process.env.PHONE_ID && !process.env.FROM_PHONE_ID) {
-    missing.push('PHONE_ID');
+
+  const usingTwilio = process.env.TWILIO_ACCOUNT_SID;
+  const missing = [];
+
+  if (usingTwilio) {
+    ['TWILIO_AUTH_TOKEN', 'TWILIO_NUMBER'].forEach(v => {
+      if (!process.env[v]) missing.push(v);
+    });
+  } else {
+    ['WHATSAPP_TOKEN', 'VERIFY_TOKEN'].forEach(v => {
+      if (!process.env[v]) missing.push(v);
+    });
+    if (!process.env.PHONE_ID && !process.env.FROM_PHONE_ID) missing.push('PHONE_ID');
   }
+
+  if (!process.env.OPENAI_API_KEY) missing.push('OPENAI_API_KEY');
+
   if (missing.length) {
     console.error('Missing environment variables: ' + missing.join(', '));
     process.exit(1);
@@ -154,7 +166,7 @@ app.get("/admin/export", async (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
-  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];  let message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
   if (!message && req.body.Body && req.body.From) {
     const from = req.body.From.replace(/^whatsapp:/, '');
