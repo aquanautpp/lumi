@@ -43,6 +43,11 @@ function validateEnv() {
 
 validateEnv();
 
+const LIMITE_INTERACOES = parseInt(
+  process.env.LIMITE_INTERACOES || '20',
+  10
+);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
