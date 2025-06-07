@@ -29,7 +29,19 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
 
   if (usuario?.modoSussurro) mensagem = "🤫 " + mensagem;
 
- if (USING_TWILIO) {
+  if (global.__twiMLMessages) {
+  if (opcoes && opcoes.length) {
+      const lista = opcoes.map((b, i) => `${i + 1}. ${b.title}`).join('\n');
+      mensagem = `${mensagem}\n\n${lista}`;
+      usuario.menuAtual = opcoes;
+    } else {
+      delete usuario.menuAtual;
+    }
+    global.__twiMLMessages.push({ body: mensagem });
+    return { local: true };
+  }
+
+  if (USING_TWILIO) {
     if (opcoes && opcoes.length) {
       const lista = opcoes.map((b, i) => `${i + 1}. ${b.title}`).join('\n');
       mensagem = `${mensagem}\n\n${lista}`;
@@ -115,6 +127,10 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
 }
 
 export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
+    if (global.__twiMLMessages) {
+    global.__twiMLMessages.push({ body: '', media: urlArquivo });
+    return { local: true };
+  }
 if (USING_TWILIO) {
     const payload = new URLSearchParams({
       From: TWILIO_NUMBER,
