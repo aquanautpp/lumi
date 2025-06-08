@@ -5,7 +5,7 @@ import { enviarMensagemWhatsApp } from './whatsapp.js';
 const perguntasEstilo = [
   { id: 1, estilo: "visual", texto: "📸 Gosto de aprender vendo imagens e vídeos." },
   { id: 2, estilo: "auditivo", texto: "🎧 Aprendo melhor ouvindo explicações e músicas." },
-  { id: 3, estilo: "cinestesico", texto: "👐 Prefiro aprender fazendo coisas com as mãos e me movendo." },
+  { id: 3, estilo: "cinestesico", texto: "👐 Prefiro aprender por experiência, praticando." },
   { id: 4, estilo: "narrativo", texto: "📖 Você adora quando te explicam algo com uma história?" },
   { id: 5, estilo: "visual", texto: "👀 Você prefere ver um desenho do que ouvir uma explicação?" },
   { id: 6, estilo: "auditivo", texto: "🎤 Você lembra melhor quando alguém te conta em voz alta?" }
