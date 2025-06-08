@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import dotenv from 'dotenv';
 import { enviarMensagemWhatsApp } from './whatsapp.js';
+import { carregar as carregarDb, salvar as salvarDb } from './sqlite.js';
 
 dotenv.config();
 
@@ -40,12 +41,22 @@ export async function definirMascote(numero, mascote) {
 }
 
 async function carregarMemoria() {
-  try {
-    const dados = JSON.parse(await fs.readFile(MEMORIA_PATH, 'utf-8'));
-    Object.assign(memoriaUsuarios, dados);
-    console.log('✅ Memória dos usuários carregada.');
-   } catch (err) {
-    if (err.code !== 'ENOENT') console.error('❌ Erro ao carregar memória:', err);
+  if (process.env.DB_TYPE === 'sqlite') {
+    try {
+      const dados = await carregarDb();
+      Object.assign(memoriaUsuarios, dados);
+      console.log('✅ Memória dos usuários carregada (SQLite).');
+    } catch (err) {
+      console.error('❌ Erro ao carregar memória do banco:', err);
+    }
+  } else {
+    try {
+      const dados = JSON.parse(await fs.readFile(MEMORIA_PATH, 'utf-8'));
+      Object.assign(memoriaUsuarios, dados);
+      console.log('✅ Memória dos usuários carregada.');
+    } catch (err) {
+      if (err.code !== 'ENOENT') console.error('❌ Erro ao carregar memória:', err);
+    }
   }
   try {
     const desafios = JSON.parse(await fs.readFile(DESAFIOS_PATH, 'utf-8'));
@@ -64,7 +75,11 @@ async function carregarMemoria() {
 }
 
 export async function salvarMemoria() {
-  await fs.writeFile(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
+  if (process.env.DB_TYPE === 'sqlite') {
+    await salvarDb(memoriaUsuarios);
+  } else {
+    await fs.writeFile(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
+  }
   await fs.writeFile(DESAFIOS_PATH, JSON.stringify(desafiosPendentes, null, 2));
   await fs.writeFile(MISSOES_PATH, JSON.stringify(missoesPendentes, null, 2));
 }
