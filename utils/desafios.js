@@ -49,10 +49,10 @@ export const desafios = {
     { enunciado: 'Qual civilização construiu as pirâmides de Gizé?', resposta: 'egito antigo', tipo: 'narrativo' }
   ],
   charada: [
-    { enunciado: '🍎 + 🍎 + 🍌 = 14. Quanto vale cada fruta?', resposta: 'maçã=5, banana=4', tipo: 'visual' },
-    { enunciado: 'Tenho dentes mas não mordo. O que sou?', resposta: 'pente', tipo: 'auditivo' },
-    { enunciado: 'Sou alto quando jovem e baixo quando velho. O que sou?', resposta: 'vela', tipo: 'cinestesico' },
-    { enunciado: 'Qual é o animal que anda com uma pata?', resposta: 'pato', tipo: 'narrativo' }
+    { enunciado: 'O que é cheio de buracos mas ainda consegue segurar água?', resposta: 'esponja', tipo: 'narrativo' },
+    { enunciado: 'O que tem pescoço mas não tem cabeça?', resposta: 'garrafa', tipo: 'auditivo' },
+    { enunciado: 'Quanto mais seca, mais molhada fica. O que é?', resposta: 'toalha', tipo: 'cinestesico' },
+    { enunciado: 'O que se quebra se falamos?', resposta: 'silencio', tipo: 'narrativo' }
   ],
   visual: [
     {
@@ -74,6 +74,7 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) 
   const lista = desafios[categoria];
   if (!lista) return null;
   let filtrados = lista.filter(d => d.tipo === estilo);
+  filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   filtrados = filtrarResolvidos(filtrados, numero);
   if (filtrados.length === 0) {
     filtrados = filtrarResolvidos(lista, numero);
@@ -85,8 +86,7 @@ export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   const lista = desafios[categoria];
   if (!lista) return null;
    let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
-  filtrados = filtrarResolvidos(filtrados, numero);
-  if (filtrados.length === 0 && estilo) {
+  filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
     filtrados = filtrarResolvidos(lista, numero);
   }
   return filtrados[Math.floor(Math.random() * filtrados.length)];
