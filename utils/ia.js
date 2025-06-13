@@ -1,7 +1,4 @@
-import dotenv from 'dotenv';
-import { openaiRequest } from './openai.js';
-
-dotenv.config();
+import openai from "../src/lib/openaiClient.js";
 
 async function gerarRespostaIA(prompt) {
   try {
