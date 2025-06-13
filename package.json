@@ -18,7 +18,9 @@
     "openai": "^4.30.0",
     "sqlite3": "^5.1.7",
     "sqlite": "^5.1.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "twilio": "^4.5.0",
+    "compromise": "^13.11.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",
