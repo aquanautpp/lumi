@@ -1,4 +1,4 @@
-import openai from "../src/lib/openaiClient.js";
+import { openaiRequest } from './openai.js';
 
 async function gerarRespostaIA(prompt) {
   try {
