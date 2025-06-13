@@ -36,16 +36,19 @@ export function formatarPergunta(desafio) {
 export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  let filtrados = lista;
+  let filtrados = lista.filter(d => d.tipo === estilo);
   filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   filtrados = filtrarResolvidos(filtrados, numero);
+    if (filtrados.length === 0) {
+    filtrados = filtrarResolvidos(lista, numero);
+  }
   return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
 export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  let filtrados = lista;
+  let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
   filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   filtrados = filtrarResolvidos(filtrados, numero);
   return filtrados[Math.floor(Math.random() * filtrados.length)];
