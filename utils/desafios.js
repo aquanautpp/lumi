@@ -25,9 +25,8 @@ export const desafios = {
   ],
   portugues: [
     // { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães', tipo: 'visual' },
-    { enunciado: 'Qual é o contrário de "grande"?', resposta: 'pequeno', tipo: 'auditivo' },
-    { enunciado: 'Como se escreve "arroz": com Z ou S?', resposta: 'z', tipo: 'narrativo' },
-    // { enunciado: 'Qual é o aumentativo de "casa"?', resposta: 'casarão', tipo: 'visual' },
+    { enunciado: 'Qual é o contrário de "baixo"?', resposta: 'alto', tipo: 'auditivo' },
+    // { enunciado: 'Qual é o aumentativo de "grande"?', resposta: 'grandão', tipo: 'visual' },
     { enunciado: 'Qual é a forma correta: coração ou coraçao?', resposta: 'coração', tipo: 'narrativo' },
     { enunciado: 'Diga um sinônimo de "alegre"', resposta: 'feliz', tipo: 'auditivo' },
     // { enunciado: 'Complete: "Minha família ____ reunida hoje"', resposta: 'está', tipo: 'visual' },
@@ -49,7 +48,7 @@ export const desafios = {
     { enunciado: 'Qual civilização construiu as pirâmides de Gizé?', resposta: 'egito antigo', tipo: 'narrativo' }
   ],
   charada: [
-    { enunciado: 'O que é verde e fica no canto da sala? (Dica: é uma planta)', resposta: 'vaso', tipo: 'narrativo' },
+    { enunciado: 'O que é o que é: é cheia de furinhos, mas consegue reter água?', resposta: 'a esponja', tipo: 'narrativo' },
     { enunciado: 'O que tem folhas mas não é árvore? (Dica: usamos para ler)', resposta: 'livro', tipo: 'auditivo' },
     { enunciado: 'O que anda com você mas nunca está sozinho? (Dica: parte do corpo)', resposta: 'sombra', tipo: 'cinestesico' },
     { enunciado: 'O que tem chaves mas não abre portas? (Dica: toca música)', resposta: 'piano', tipo: 'narrativo' }
