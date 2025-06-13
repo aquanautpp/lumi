@@ -1,7 +1,7 @@
 [
   { "id": "charada_vaso", "categoria": "charadas", "nivel": "facil", "pergunta": "O que cabe em um vaso, mas não cabe em uma casa?", "resposta": "A flor", "explicacao": "É pequena o suficiente para o vaso, mas não ocupa uma casa inteira." },
-  { "id":"matematica_101","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 6 + 3?","resposta":"9","explicacao":"Somar 6 e 3 resulta em 9."},
-  { "id":"matematica_102","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 10 − 4?","resposta":"6","explicacao":"Subtrair 4 de 10 resulta em 6."},
+  { "id":"matematica_101","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 6 + 3?","alternativas":["7","8","9","10","11"],"correta":2,"explicacao":"Somar 6 e 3 resulta em 9."},
+  { "id":"matematica_102","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 10 − 4?","alternativas":["5","6","7","8","9"],"correta":1,"explicacao":"Subtrair 4 de 10 resulta em 6."},
   { "id":"matematica_103","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 2 × 4?","resposta":"8","explicacao":"Multiplicar 2 por 4 resulta em 8."},
   { "id":"matematica_104","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 12 ÷ 3?","resposta":"4","explicacao":"Dividir 12 por 3 resulta em 4."},
   { "id":"matematica_105","categoria":"matematica","nivel":"facil","pergunta":"Se você tem 5 balas e ganha mais 2, quantas balas tem agora?","resposta":"7","explicacao":"5 + 2 = 7."},
@@ -11,7 +11,7 @@
   { "id":"matematica_109","categoria":"matematica","nivel":"facil","pergunta":"Quanto falta para 10 se eu tenho 7?","resposta":"3","explicacao":"10 − 7 = 3."},
   { "id":"matematica_110","categoria":"matematica","nivel":"facil","pergunta":"Qual número é maior: 9 ou 6?","resposta":"9","explicacao":"9 é maior que 6."},
 
-  { "id":"logica_201","categoria":"logica","nivel":"facil","pergunta":"Hoje é segunda-feira. Que dia será amanhã?","resposta":"Terça-feira","explicacao":"O dia seguinte a segunda é terça."},
+   { "id":"logica_201","categoria":"logica","nivel":"facil","pergunta":"Hoje é segunda-feira. Que dia será amanhã?","alternativas":["Segunda-feira","Quarta-feira","Terça-feira","Sexta-feira","Domingo"],"correta":2,"explicacao":"O dia seguinte a segunda é terça."},
   { "id":"logica_202","categoria":"logica","nivel":"facil","pergunta":"Se gato rima com sapato, qual destas palavras também rima? (Pato / Casa)","resposta":"Pato","explicacao":"Pato termina com 'ato', como gato."},
   { "id":"logica_203","categoria":"logica","nivel":"facil","pergunta":"Qual número completa a sequência: 2, 4, 6, __?","resposta":"8","explicacao":"A sequência soma 2 a cada passo."},
   { "id":"logica_204","categoria":"logica","nivel":"facil","pergunta":"Qual destes objetos é diferente? (Bola, Bola, Cubo)","resposta":"Cubo","explicacao":"Cubo tem faces planas; bolas são esféricas."},
