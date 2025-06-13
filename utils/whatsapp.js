@@ -3,14 +3,16 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
 import { promises as fs } from 'fs';
+import twilio from 'twilio';
 
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_ID = process.env.PHONE_ID || process.env.FROM_PHONE_ID;
 const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
-const TWILIO_AUTH = process.env.TWILIO_AUTH_TOKEN;
-const TWILIO_NUMBER = process.env.TWILIO_NUMBER;
+const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_NUMBER;
+const USING_TWILIO = TWILIO_SID && TWILIO_AUTH && TWILIO_WHATSAPP_NUMBER;
+const twilioClient = USING_TWILIO ? twilio(TWILIO_SID, TWILIO_AUTH) : null;
 const USING_TWILIO = TWILIO_SID && TWILIO_AUTH && TWILIO_NUMBER;
 const LOG_PATH = 'mensagens_falhas.txt';
 
@@ -47,28 +49,21 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
       mensagem = `${mensagem}\n\n${lista}`;
     }
 
-    const payload = new URLSearchParams({
-      From: TWILIO_NUMBER,
-      To: `whatsapp:${numero}`,
-      Body: mensagem
-    });
-
-    try {
-      const resp = await axios.post(
-        `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
-        payload.toString(),
-        {
-          auth: { username: TWILIO_SID, password: TWILIO_AUTH },
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          timeout: 5000
-        }
-      );
+      try {
+       const resp = await twilioClient.messages.create({
+        from: `whatsapp:+${TWILIO_WHATSAPP_NUMBER}`,
+        to: `whatsapp:${numero}`,
+        body: mensagem
+      });
       console.log(`✅ Mensagem enviada (Twilio) para ${numero}: ${mensagem}`);
-      return resp.data;
+      return resp;
     } catch (erro) {
       const log = `[${new Date().toISOString()}] Falha Twilio para ${numero}: ${mensagem} - Erro: ${erro.response?.data?.message || erro.message}\n`;
       await fs.appendFile(LOG_PATH, log);
       console.error('❌ Erro ao enviar mensagem via Twilio:', erro.response?.data || erro.message);
+      if (erro.code === 63018) {
+        await enviarMensagemWhatsApp(numero, 'Seu número não está autorizado a receber mensagens deste remetente.');
+      }
       throw erro;
     }
   }
@@ -131,29 +126,23 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
     global.__twiMLMessages.push({ body: '', media: urlArquivo });
     return { local: true };
   }
-if (USING_TWILIO) {
-    const payload = new URLSearchParams({
-      From: TWILIO_NUMBER,
-      To: `whatsapp:${numero}`,
-      MediaUrl: urlArquivo,
-      Body: ''
-    });
-
+  if (USING_TWILIO) {
     try {
-      const resp = await axios.post(
-        `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
-        payload.toString(),
-        {
-          auth: { username: TWILIO_SID, password: TWILIO_AUTH },
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }
-      );
+      const resp = await twilioClient.messages.create({
+        from: `whatsapp:+${TWILIO_WHATSAPP_NUMBER}`,
+        to: `whatsapp:${numero}`,
+        mediaUrl: urlArquivo,
+        body: ''
+      });
       console.log(`✅ Mídia enviada (Twilio) para ${numero}: ${urlArquivo}`);
-      return resp.data;
+      return resp;
     } catch (erro) {
       const log = `[${new Date().toISOString()}] Falha de mídia Twilio para ${numero}: ${urlArquivo} - Erro: ${erro.response?.data?.message || erro.message}\n`;
       await fs.appendFile(LOG_PATH, log);
       console.error('❌ Erro ao enviar mídia via Twilio:', erro.response?.data || erro.message);
+      if (erro.code === 63018) {
+        await enviarMensagemWhatsApp(numero, 'Seu número não está autorizado a receber mensagens deste remetente.');
+      }
       throw erro;
     }
   }
