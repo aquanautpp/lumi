@@ -221,9 +221,7 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
         const primeiro = missao[0];
         desafiosPendentes[from] = { ...primeiro, categoria: primeiro.categoria, tentativas: 0 };
         await salvarMemoria();
-        await enviarMensagemWhatsApp(from, `📘 Missão do Dia! Categoria: ${primeiro.categoria}
-
-🧠 ${primeiro.enunciado}`);
+        await enviarMensagemWhatsApp(from, `📘 Missão do Dia! Categoria: ${primeiro.categoria}\n\n${formatarPergunta(primeiro)}`);
         if (primeiro.midia) await enviarMidiaWhatsApp(from, primeiro.midia, primeiro.tipo);
       } else {
         await enviarMensagemWhatsApp(from, 'Não consegui criar a missão agora. Tente mais tarde!');
@@ -247,7 +245,7 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     }
     desafiosPendentes[from] = { ...desafio, categoria: hoje.categoria, tentativas: 0 };
     await salvarMemoria();
-    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n🧠 ${desafio.enunciado}`);
+    await enviarMensagemWhatsApp(from, `📅 Hoje é dia de *${hoje.categoria}*!\n\n${formatarPergunta(desafio)}`);
     if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
     return res.sendStatus(200);
   }
@@ -283,7 +281,7 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     if (desafio) {
       desafiosPendentes[from] = { ...desafio, categoria: "charada", tentativas: 0 };
       await salvarMemoria();
-         await enviarMensagemWhatsApp(from, `🧩 Charada:\n\n${desafio.enunciado}`);
+      await enviarMensagemWhatsApp(from, formatarPergunta(desafio));
     } else {
     await enviarMensagemWhatsApp(from, "Não encontrei uma charada agora. Tente mais tarde!");
     }
@@ -324,7 +322,7 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
           const prox = missao.desafios[missao.atual];
           desafiosPendentes[from] = { ...prox, categoria: prox.categoria, tentativas: 0 };
           await salvarMemoria();
-          await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n🧠 ${prox.enunciado}`);
+          await enviarMensagemWhatsApp(from, `🧩 Próximo desafio! Categoria: ${prox.categoria}\n\n${formatarPergunta(prox)}`);
           if (prox.midia) await enviarMidiaWhatsApp(from, prox.midia, prox.tipo);
           return res.sendStatus(200);
         } else {
