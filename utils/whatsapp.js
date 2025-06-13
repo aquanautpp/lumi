@@ -3,17 +3,13 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { memoriaUsuarios } from './memoria.js';
 import { promises as fs } from 'fs';
-import twilio from 'twilio';
+import { twilioClient, usingTwilio as USING_TWILIO, twilioNumber as TWILIO_WHATSAPP_NUMBER } from '../src/lib/twilioClient.js';
 
 dotenv.config();
 
 const TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_ID = process.env.PHONE_ID || process.env.FROM_PHONE_ID;
-const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
-const TWILIO_AUTH = process.env.TWILIO_AUTH_TOKEN;
-const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_NUMBER;
-const USING_TWILIO = TWILIO_SID && TWILIO_AUTH && TWILIO_WHATSAPP_NUMBER;
-const twilioClient = USING_TWILIO ? twilio(TWILIO_SID, TWILIO_AUTH) : null;
+// Twilio configuration is handled in src/lib/twilioClient.js
 const LOG_PATH = 'mensagens_falhas.txt';
 
 export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, tentativa = 1) {
