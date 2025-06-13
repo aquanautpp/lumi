@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { salvar as salvarDb } from './sqlite.js';
 
 const MEMORIA_ARQUIVO = 'memoria.json';
 const DESAFIOS_PENDENTES_ARQUIVO = 'desafiosPendentes.json';
