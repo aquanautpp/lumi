@@ -70,3 +70,42 @@ export function gerarMissao(estilo = null, numero) {
 
   return missao.length === 3 ? missao : null;
 }
+
+export async function enviarCharadaVisual(numero) {
+  let desafioEncontrado = null;
+  let categoriaImagem = null;
+  for (const cat of Object.keys(desafios)) {
+    const possivel = desafios[cat].find(d => d.tipo === 'image');
+    if (possivel) {
+      desafioEncontrado = possivel;
+      categoriaImagem = cat;
+      break;
+    }
+  }
+  if (desafioEncontrado) {
+    desafiosPendentes[numero] = { ...desafioEncontrado, categoria: categoriaImagem };
+    await salvarMemoria();
+    await enviarMensagemWhatsApp(numero, `🔍 Charada visual:\n\n${desafioEncontrado.enunciado}`);
+    if (desafioEncontrado.midia) await enviarMidiaWhatsApp(numero, desafioEncontrado.midia, desafioEncontrado.tipo);
+    return true;
+  }
+  await enviarMensagemWhatsApp(numero, 'Ainda não tenho uma charada visual no momento! 😕');
+  return false;
+}
+
+function filtrarResolvidos(lista, numero) {
+  const resolvidos = new Set(memoriaUsuarios[numero]?.resolvidos || []);
+  return lista.filter(d => !resolvidos.has(d.enunciado));
+}
+
+export function registrarDesafioResolvido(numero, desafio) {
+  if (!memoriaUsuarios[numero]) {
+    memoriaUsuarios[numero] = { historico: [], resolvidos: [] };
+  }
+  const user = memoriaUsuarios[numero];
+  user.resolvidos = user.resolvidos || [];
+  if (!user.resolvidos.includes(desafio.enunciado)) {
+    user.resolvidos.push(desafio.enunciado);
+    salvarMemoria();
+  }
+}
