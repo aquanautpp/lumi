@@ -7,7 +7,7 @@ describe('GET /webhook', () => {
     process.env.VERIFY_TOKEN = 'test-token';
     process.env.NODE_ENV = 'test';
     process.env.OPENAI_API_KEY = 'test';
-    app = (await import('../index.js')).default;
+    app = (await import('../src/app.js')).default;
   });
 
   test('retorna challenge quando token confere', async () => {
