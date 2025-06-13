@@ -17,7 +17,7 @@ import { gerarFeedback } from './utils/feedback.js';
 import { atualizarMemoria } from './utils/historico.js';
 import { verificarNivel, obterNivel } from './utils/niveis.js';
 import { validarResposta, validarTentativas } from './utils/validacao.js';
-import { exportarParaGoogleSheets } from './utils/analytics.js';
+import { exportarParaGoogleSheets, getSheetColumns } from './utils/analytics.js';
 import { obterDesafioDoDia } from './utils/rotinaSemanal.js';
 import { getFala } from './utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from './utils/learningStyle.js';
@@ -25,8 +25,9 @@ import nlp from 'compromise';
 import { gerarRespostaIA } from './utils/ia.js';
 import { enviarDesafioFamilia } from './utils/desafioFamilia.js';
 import { enviarDesafioVidaReal } from './utils/desafiosVidaReal.js';
-import { iniciarAventura, enviarDesafioAventura } from './utils/aventura.js';
+import { iniciarAventura, enviarDesafioAventura, concluirEtapa } from './utils/aventura.js';
 import { explainCurrent } from './utils/challenges.js';
+import { logError } from './utils/logger.js';
 
 dotenv.config();
 
@@ -80,7 +81,8 @@ app.get('/webhook', (req, res) => {
 const comandosRapidos = [
   { title: "📚 Missão do Dia", body: "Quero a missão do dia" },
   { title: "🧠 Me dá um desafio", body: "Quero um desafio" },
-  { title: "❓Quem é você?", body: "Quem é você?" }
+  { title: "❓Quem é você?", body: "Quem é você?" },
+  { title: "🎯 Teste: Estilo de Aprendizagem", body: "Estilo de aprendizagem" }
 ];
 
 
@@ -120,7 +122,7 @@ const comandosDetalhados = [
   "🧠 'Quero um desafio' - Desafio do dia",
   "❓ 'Quem é você?' - Saber sobre a Lumi",
   "📈 'Qual meu nível?' - Ver seu progresso",
-  "🎯 'Meu estilo' - Teste de personalidade",
+  "🎯 'Teste: Estilo de Aprendizagem' - Teste de personalidade",
   "👨‍👩‍👧 'Desafio em família' - Atividade em grupo",
   "🏠 'Desafio da vida real' - Tarefas para fazer em casa",
   "🌋 'Aventura' - Desafio temático",
@@ -140,7 +142,7 @@ function enviarListaComandos(numero) {
 function enviarBoasVindas(numero) {
   return enviarMensagemWhatsApp(
     numero,
-     "Oi, eu sou a Lumi 💛. Peça o 'menu' para ver meus comandos e escreva 'Meu estilo' se quiser descobrir seu jeito de aprender!",
+     "Oi, eu sou a Lumi 💛. Peça o 'menu' para ver meus comandos e escreva 'Como eu aprendo melhor?' se quiser descobrir seu jeito de aprender!",
     comandosRapidos
   );
 }
@@ -165,6 +167,10 @@ app.get("/admin/export", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Falha ao exportar" });
   }
+});
+
+app.get('/logs/sheets', (req, res) => {
+  res.json({ columns: getSheetColumns() });
 });
 
 function escapeXml(str) {
@@ -278,6 +284,13 @@ app.post('/webhook', async (req, res) => {
   const respondeuEstilo = await processarRespostaEstilo(from, texto);
   if (respondeuEstilo) return res.sendStatus(200);
 
+  usuario.messagesUsed = (usuario.messagesUsed || 0) + 1;
+  if (usuario.messagesUsed >= 50) {
+    await enviarMensagemWhatsApp(from, 'Que tal testar a Lumi oficial? 💜');
+    await salvarMemoria();
+    return res.sendStatus(200);
+  }
+
   usuario.interacoes = (usuario.interacoes || 0) + 1;
   if (usuario.interacoes >= LIMITE_INTERACOES) {
     usuario.aguardandoRespostaFinal = true;
@@ -296,7 +309,11 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     await enviarMensagemWhatsApp(from, 'Sou a Lumi, sua parceira de estudos! 💛');
     return res.sendStatus(200);
   }
-  if (textoLower.includes('meu estilo') || textoLower.includes('estilo de aprendizagem')) {
+  if (
+    textoLower.includes('como eu aprendo melhor') ||
+    textoLower.includes('meu estilo') ||
+    textoLower.includes('estilo de aprendizagem')
+  ) {
     await aplicarPerguntaEstilo(from);
     return res.sendStatus(200);
    }
@@ -327,9 +344,19 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     return res.sendStatus(200);
   }
 
-  if (['qual era a resposta', 'me explica', 'qual a explicacao', 'qual a explicação'].some(t => textoLower.includes(t))) {
+    if (
+    [
+      'qual era a resposta',
+      'me explica',
+      'qual a explicacao',
+      'qual a explicação',
+      'explicacao',
+      'qual era',
+      'me mostra a resposta'
+    ].some(t => textoLower.includes(t))
+  ) {
     const desafio = desafiosPendentes[from];
-    const msg = explainCurrent(desafio);
+    const msg = await explainCurrent(desafio);
     await enviarMensagemWhatsApp(from, msg);
     return res.sendStatus(200);
   }
@@ -368,6 +395,27 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
   }
 
   const doc = nlp(textoLower);
+    if (textoSemAcento === 'desafio') {
+    delete desafiosPendentes[from];
+    const categorias = ['matematica','logica','portugues','ciencias','historia','charada'];
+    const ultima = usuario.ultimaCategoria;
+    const disponiveis = categorias.filter(c => c !== ultima);
+    const categoria = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+    usuario.ultimaCategoria = categoria;
+    const estilo = usuario.learningStyle || null;
+    const desafio = escolherDesafioPorCategoria(categoria, from, estilo);
+    if (desafio) {
+      desafiosPendentes[from] = { ...desafio, categoria, tentativas: 0 };
+      await salvarMemoria();
+      await enviarMensagemWhatsApp(from, `Categoria sorteada: *${categoria}*\n\n🧠 ${desafio.enunciado}`);
+      if (desafio.midia) await enviarMidiaWhatsApp(from, desafio.midia, desafio.tipo);
+    } else {
+      await enviarMensagemWhatsApp(from, 'Não encontrei um desafio agora. Tente novamente!');
+    }
+    await salvarMemoria();
+    return res.sendStatus(200);
+  }
+
   const querDesafio = doc.has('novo desafio') || doc.has('outro desafio') || /(quero.*desafio|mais.*desafio)/.test(textoSemAcento);
   if (querDesafio) {
     delete desafiosPendentes[from];
@@ -393,7 +441,14 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
 
   if (textoLower.includes('desafio da vida real')) {
         delete desafiosPendentes[from];
-    await enviarDesafioVidaReal(from);
+    try {
+      await Promise.race([
+        enviarDesafioVidaReal(from),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+      ]);
+    } catch {
+      await enviarMensagemWhatsApp(from, 'Tive um probleminha, já volto 💜');
+    }
     return res.sendStatus(200);
   }
 
@@ -449,6 +504,15 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
       }
       const msgNivel = verificarNivel(usuario);
       if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
+            if (desafio.aventura) {
+        const msgEtapa = concluirEtapa(from, true);
+        if (msgEtapa) await enviarMensagemWhatsApp(from, msgEtapa);
+        if (memoriaUsuarios[from]?.aventura) {
+          const next = enviarDesafioAventura(from);
+          if (next) await enviarMensagemWhatsApp(from, next);
+          return res.sendStatus(200);
+        }
+      }
       delete desafiosPendentes[from];
       if (missoesPendentes[from]) {
         const missao = missoesPendentes[from];
@@ -496,6 +560,7 @@ app.get('/health', (req, res) => {
 
 process.on('uncaughtException', err => {
   console.error(err);
+  logError(err);
   if (global.lastUserNumber) {
     enviarMensagemWhatsApp(global.lastUserNumber, 'Desculpa, tive um probleminha e já estou reiniciando 💜');
   }
@@ -503,6 +568,7 @@ process.on('uncaughtException', err => {
 
 process.on('unhandledRejection', err => {
   console.error(err);
+  logError(err);
   if (global.lastUserNumber) {
     enviarMensagemWhatsApp(global.lastUserNumber, 'Desculpa, tive um probleminha e já estou reiniciando 💜');
   }
