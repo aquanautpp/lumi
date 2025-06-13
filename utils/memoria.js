@@ -2,12 +2,14 @@ import { promises as fs } from 'fs';
 import dotenv from 'dotenv';
 import { enviarMensagemWhatsApp } from './whatsapp.js';
 import { carregar as carregarDb, salvar as salvarDb } from './sqlite.js';
+import { logError } from './logger.js';
 
 dotenv.config();
 
-const MEMORIA_PATH = process.env.JSON_PATH || 'memoria.json';
-const DESAFIOS_PATH = 'desafiosPendentes.json';
-const MISSOES_PATH = 'missoesPendentes.json';
+const BASE_DIR = '/data';
+const MEMORIA_PATH = process.env.JSON_PATH || `${BASE_DIR}/memoria.json`;
+const DESAFIOS_PATH = `${BASE_DIR}/desafiosPendentes.json`;
+const MISSOES_PATH = `${BASE_DIR}/missoesPendentes.json`;
 
 export const memoriaUsuarios = {};
 export const desafiosPendentes = {};
@@ -48,6 +50,7 @@ async function carregarMemoria() {
       console.log('✅ Memória dos usuários carregada (SQLite).');
     } catch (err) {
       console.error('❌ Erro ao carregar memória do banco:', err);
+            logError(err);
     }
   } else {
     try {
@@ -55,7 +58,10 @@ async function carregarMemoria() {
       Object.assign(memoriaUsuarios, dados);
       console.log('✅ Memória dos usuários carregada.');
     } catch (err) {
-      if (err.code !== 'ENOENT') console.error('❌ Erro ao carregar memória:', err);
+      if (err.code !== 'ENOENT') {
+        console.error('❌ Erro ao carregar memória:', err);
+        logError(err);
+      }
     }
   }
   try {
@@ -63,21 +69,28 @@ async function carregarMemoria() {
     Object.assign(desafiosPendentes, desafios);
     console.log('✅ Desafios pendentes carregados.');
    } catch (err) {
-    if (err.code !== 'ENOENT') console.error('❌ Erro ao carregar desafios:', err);
+    if (err.code !== 'ENOENT') {
+      console.error('❌ Erro ao carregar desafios:', err);
+      logError(err);
+    }
   }
   try {
     const missoes = JSON.parse(await fs.readFile(MISSOES_PATH, 'utf-8'));
     Object.assign(missoesPendentes, missoes);
     console.log('✅ Missões pendentes carregadas.');
    } catch (err) {
-    if (err.code !== 'ENOENT') console.error('❌ Erro ao carregar missões:', err);
-  }
+    if (err.code !== 'ENOENT') {
+      console.error('❌ Erro ao carregar missões:', err);
+      logError(err);
+    }
+}
 }
 
 export async function salvarMemoria() {
   if (process.env.DB_TYPE === 'sqlite') {
     await salvarDb(memoriaUsuarios);
   } else {
+    await fs.mkdir(BASE_DIR, { recursive: true });
     await fs.writeFile(MEMORIA_PATH, JSON.stringify(memoriaUsuarios, null, 2));
   }
   await fs.writeFile(DESAFIOS_PATH, JSON.stringify(desafiosPendentes, null, 2));
@@ -101,4 +114,9 @@ export async function atualizarMemoria(numero, categoria, acertou, respostaUsuar
   await salvarMemoria();
 }
 
-await carregarMemoria();
+try {
+  await carregarMemoria();
+} catch (err) {
+  console.error('Falha ao carregar memória:', err);
+  logError(err);
+}
