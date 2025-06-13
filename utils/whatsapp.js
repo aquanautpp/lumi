@@ -46,8 +46,11 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
     }
 
       try {
-       const resp = await twilioClient.messages.create({
-        from: `whatsapp:+${TWILIO_WHATSAPP_NUMBER}`,
+      const fromNumber = TWILIO_WHATSAPP_NUMBER.startsWith('whatsapp:')
+        ? TWILIO_WHATSAPP_NUMBER
+        : `whatsapp:${TWILIO_WHATSAPP_NUMBER}`;
+      const resp = await twilioClient.messages.create({
+        from: fromNumber,
         to: `whatsapp:${numero}`,
         body: mensagem
       });
@@ -124,8 +127,11 @@ export async function enviarMidiaWhatsApp(numero, urlArquivo, tipo = 'image') {
   }
   if (USING_TWILIO) {
     try {
+        const fromNumber = TWILIO_WHATSAPP_NUMBER.startsWith('whatsapp:')
+        ? TWILIO_WHATSAPP_NUMBER
+        : `whatsapp:${TWILIO_WHATSAPP_NUMBER}`;
       const resp = await twilioClient.messages.create({
-        from: `whatsapp:+${TWILIO_WHATSAPP_NUMBER}`,
+        from: fromNumber,
         to: `whatsapp:${numero}`,
         mediaUrl: urlArquivo,
         body: ''
