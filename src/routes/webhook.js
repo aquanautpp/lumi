@@ -2,7 +2,7 @@ import express from 'express';
 import nlp from 'compromise';
 
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from '../../utils/whatsapp.js';
-import { escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido, selecionarDesafioPorCategoriaEEstilo } from '../../utils/desafios.js';
+import { escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido, selecionarDesafioPorCategoriaEEstilo, formatarPergunta } from '../../utils/desafios.js';
 import {
   memoriaUsuarios,
   desafiosPendentes,
