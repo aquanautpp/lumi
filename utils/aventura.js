@@ -3,16 +3,25 @@ import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './memoria.js'
 
 const etapas = [
   {
-    introducao: "Bem-vindo ao Reino dos Números! O rei precisa de ajuda para resolver problemas matemáticos.",
-    desafio: { categoria: "matematica", tipo: "visual" },
-    conclusao: "Parabéns! Você ajudou o rei e salvou o reino!"
+    texto: 'Você entrou na Caverna Sombria. Para acender a tocha, resolva:',
+    desafio: { categoria: 'matematica', tipo: 'narrativo' },
+    conclusao: 'A caverna se ilumina e revela uma passagem secreta.'
   },
   {
-    introducao: "Agora, vamos à Floresta da Lógica, onde enigmas esperam por você.",
-    desafio: { categoria: "logica", tipo: "auditivo" },
-    conclusao: "Você desvendou os mistérios da floresta!"
+    texto: 'Na ponte quebradiça há um enigma. Para atravessar, responda:',
+    desafio: { categoria: 'logica', tipo: 'auditivo' },
+    conclusao: 'A ponte se estabiliza e você continua o caminho.'
+  },
+  {
+    texto: 'Um guardião da floresta quer testar seus conhecimentos:',
+    desafio: { categoria: 'ciencias', tipo: 'narrativo' },
+    conclusao: 'O guardião permite sua passagem.'
+  },
+  {
+    texto: 'A porta do tesouro pede uma última senha:',
+    desafio: { categoria: 'portugues', tipo: 'narrativo' },
+    conclusao: 'Parabéns! Você concluiu a aventura e encontrou o tesouro!'
   }
-  // Adicione mais etapas conforme necessário
 ];
 
 export function iniciarAventura(numero) {
@@ -20,16 +29,16 @@ export function iniciarAventura(numero) {
     memoriaUsuarios[numero] = {};
   }
   memoriaUsuarios[numero].aventura = {
-    etapaAtual: 0,
-    concluidas: []
+    step: 0,
+    history: []
   };
   salvarMemoria();
 }
 
 export function proximaEtapa(numero) {
   const usuario = memoriaUsuarios[numero];
-  if (usuario && usuario.aventura && usuario.aventura.etapaAtual < etapas.length - 1) {
-    usuario.aventura.etapaAtual += 1;
+  if (usuario && usuario.aventura && usuario.aventura.step < etapas.length - 1) {
+    usuario.aventura.step += 1;
     salvarMemoria();
   }
 }
@@ -37,7 +46,7 @@ export function proximaEtapa(numero) {
 export function getEtapaAtual(numero) {
   const usuario = memoriaUsuarios[numero];
   if (usuario && usuario.aventura) {
-    return etapas[usuario.aventura.etapaAtual];
+    return etapas[usuario.aventura.step];
   }
   return null;
 }
@@ -45,12 +54,37 @@ export function getEtapaAtual(numero) {
 export function enviarDesafioAventura(numero) {
   const etapa = getEtapaAtual(numero);
   if (etapa) {
-    const desafio = selecionarDesafioPorCategoriaEEstilo(etapa.desafio.categoria, etapa.desafio.tipo, numero);
+    const desafio = selecionarDesafioPorCategoriaEEstilo(
+      etapa.desafio.categoria,
+      etapa.desafio.tipo,
+      numero
+    );
     if (desafio) {
-      desafiosPendentes[numero] = { ...desafio, categoria: etapa.desafio.categoria, tentativas: 0 };
+      desafiosPendentes[numero] = {
+        ...desafio,
+        categoria: etapa.desafio.categoria,
+        tentativas: 0,
+        aventura: true
+      };
       salvarMemoria();
-      return `🌟 *${etapa.introducao}*\n\n🧠 ${desafio.enunciado}`;
+      return `🌟 *${etapa.texto}*\n\n🧠 ${desafio.enunciado}`;
     }
   }
   return null;
+}
+
+export function concluirEtapa(numero, acertou) {
+  const usuario = memoriaUsuarios[numero];
+  if (!usuario?.aventura) return null;
+  const etapa = etapas[usuario.aventura.step];
+  usuario.aventura.history.push({ step: usuario.aventura.step + 1, acertou });
+  const msg = etapa.conclusao;
+  if (usuario.aventura.step >= etapas.length - 1) {
+    delete usuario.aventura;
+    salvarMemoria();
+    return msg;
+  }
+  usuario.aventura.step += 1;
+  salvarMemoria();
+  return msg;
 }
