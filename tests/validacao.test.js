@@ -45,4 +45,24 @@ describe('validarTentativas', () => {
     expect(r.acertou).toBe(false);
     expect(r.explicacao).toContain('42');
   });
+  
+  test('multiple choice acerto por letra', () => {
+    const desafio = { alternativas: ['1', '2', '3', '4', '5'], correta: 2, resposta: '3', tentativas: 0 };
+    const r = validarTentativas('C', desafio);
+    expect(r.acertou).toBe(true);
+  });
+
+  test('multiple choice erro por letra errada', () => {
+    const desafio = { alternativas: ['a', 'b', 'c', 'd', 'e'], correta: 0, resposta: 'a', tentativas: 0 };
+    const r = validarTentativas('B', desafio);
+    expect(r.acertou).toBe(false);
+    expect(r.dica).toBeDefined();
+  });
+
+  test('multiple choice letra invalida', () => {
+    const desafio = { alternativas: ['x', 'y', 'z', 'w', 'q'], correta: 1, resposta: 'y', tentativas: 0 };
+    const r = validarTentativas('F', desafio);
+    expect(r.acertou).toBe(false);
+    expect(r.dica).toContain('letras');
+  });
 });
