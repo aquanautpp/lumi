@@ -88,7 +88,6 @@ export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
   filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   filtrados = filtrarResolvidos(filtrados, numero);
-  }
   return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
 
