@@ -31,5 +31,12 @@
   { "id":"charada_307","categoria":"charadas","nivel":"facil","pergunta":"O que é, o que é: tem folhas, mas não é árvore; tem capa, mas não é super-herói?","resposta":"O livro","explicacao":"Livro tem capa e folhas de papel."},
   { "id":"charada_308","categoria":"charadas","nivel":"facil","pergunta":"Qual é a planta que cresce de cabeça para baixo?","resposta":"O alfineteiro (cacto de cabeça-para-baixo)","explicacao":"Charada simples envolvendo imagem mental."},
   { "id":"charada_309","categoria":"charadas","nivel":"facil","pergunta":"O que cabe em um vaso, mas não cabe em uma casa?","resposta":"A flor","explicacao":"É pequena para vaso, mas não para casa inteira."},
-  { "id":"charada_310","categoria":"charadas","nivel":"facil","pergunta":"O que é, o que é: se você der, ela fica pequena; se tirar, fica grande?","resposta":"A tesoura no cabelo","explicacao":"Corta cabelo (menor) e quando deixa crescer (maior)."}
+    { "id":"charada_310","categoria":"charadas","nivel":"facil","pergunta":"O que é, o que é: se você der, ela fica pequena; se tirar, fica grande?","resposta":"A tesoura no cabelo","explicacao":"Corta cabelo (menor) e quando deixa crescer (maior)."},
+  { "id":"charada_311","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: passa diante do sol e não faz sombra?","resposta":"O vento","explicacao":"O vento não tem corpo que bloqueie a luz."},
+  { "id":"charada_312","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: é cheia de furinhos, mas consegue reter água?","resposta":"A esponja","explicacao":"Apesar dos furos, a esponja absorve a água."},
+  { "id":"charada_313","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: quanto mais eu tiro, mais eu tenho?","resposta":"Fotografias","explicacao":"Ao tirar mais fotografias, você acumula mais imagens."},
+  { "id":"charada_314","categoria":"charadas","nivel":"facil","pergunta":"Qual é o queijo que mais sente dor?","resposta":"O queijo ralado","explicacao":"Ralar o queijo lembra que ele foi 'machucado'."},
+  { "id":"charada_315","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: uma pergunta que você nunca pode responder com 'sim'?","resposta":"Você está dormindo?","explicacao":"Quem está dormindo não consegue responder."},
+  { "id":"charada_316","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: quanto mais seca, mais molhada fica?","resposta":"A toalha","explicacao":"A toalha fica úmida ao secar algo."},
+  { "id":"charada_317","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: tem cidades, lojas, ruas e nenhuma pessoa?","resposta":"O mapa","explicacao":"O mapa mostra locais, mas não pessoas reais."}
 ]
