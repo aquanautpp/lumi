@@ -76,3 +76,15 @@ Caso o serviço apresente instabilidade, é possível executar a aplicação em 
 ## Exportação de dados
 Preencha `GOOGLE_SHEETS_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL` e `GOOGLE_PRIVATE_KEY` no arquivo `.env` para habilitar a exportação para o Google Sheets.
 Acesse `/admin/export` para enviar as métricas dos usuários para a aba `Usuarios` da planilha.
+
+## Persistência
+
+Os dados de usuários e filas de desafios são gravados no diretório `/data`. Caso o diretório não exista, ele é criado automaticamente no primeiro uso.
+
+## Healthcheck
+
+O endpoint `/health` responde com `OK` permitindo monitoramento simples da aplicação.
+
+## Google Sheets
+
+Use `/logs/sheets` para consultar as colunas enviadas ao Google Sheets quando exportar métricas.
