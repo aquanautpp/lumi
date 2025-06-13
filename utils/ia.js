@@ -1,11 +1,7 @@
-import OpenAI from 'openai';
 import dotenv from 'dotenv';
+import { openaiRequest } from './openai.js';
 
 dotenv.config();
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 
 async function gerarRespostaIA(prompt) {
   try {
@@ -15,9 +11,9 @@ async function gerarRespostaIA(prompt) {
       return 'Desculpe, não entendi bem o que você quis dizer 🤔';
     }
 
-    const resposta = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
+    const resposta = await openaiRequest(
+      `ia:${prompt}`,
+      [
         {
           role: 'system',
           content: `Você é a Lumi 💛, uma tutora divertida e carinhosa para crianças de 8 a 12 anos no WhatsApp. 
@@ -36,11 +32,10 @@ Seja sempre lúdica, alegre e adaptada para crianças!`
         },
         { role: 'user', content: prompt }
       ],
-      temperature: 0.7
-    });
+      0.7
+    );
 
-    const mensagem = resposta.choices[0]?.message?.content || '';
-    return mensagem;
+    return resposta;
   } catch (erro) {
     console.error('Erro ao gerar resposta da IA:', erro);
     return 'Desculpe, houve um erro ao gerar a resposta 😔';
