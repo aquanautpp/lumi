@@ -181,10 +181,15 @@ export async function exportarParaExcel() {
   xlsx.writeFile(wb, 'usuarios.xlsx');
 }
 
+export const SHEET_COLUMNS = ['ID','Nome','Estilo','Nível','Total Desafios','Acertos','Erros','Última Atividade'];
+
+export function getSheetColumns() {
+  return SHEET_COLUMNS;
+}
+
 export async function exportarParaGoogleSheets() {
   const usuarios = await carregarUsuarios();
-  const cabecalho = ['ID','Nome','Estilo','Nível','Total Desafios','Acertos','Erros','Última Atividade'];
-  const linhas = [cabecalho];
+  const linhas = [SHEET_COLUMNS];
   for (const u of Object.values(usuarios)) {
     const total = u.desafiosConcluidos.length;
     const ultima = total ? u.desafiosConcluidos[total - 1].data : '';
