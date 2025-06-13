@@ -55,6 +55,24 @@ Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
 ## Testes
 
 Os testes utilizam Jest. Rode `npm test` para executá-los.
+
+## Configurando o Twilio
+
+Crie um arquivo `.env` baseado em `env.example` e preencha:
+
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_NUMBER`
+
+Para testes no Sandbox do Twilio, use o número fornecido na área de sandbox e adicione os participantes autorizados. Em produção, defina `TWILIO_WHATSAPP_NUMBER` com o número aprovado na sua conta.
+
+## Migração de hospedagem
+
+Caso o serviço apresente instabilidade, é possível executar a aplicação em plataformas como Fly.io ou Railway.
+
+1. Crie um `Dockerfile` simples usando `node:20` e copiando o projeto.
+2. Adicione um `Procfile` com `web: node index.js`.
+3. Faça o deploy seguindo a documentação da plataforma escolhida.
 ## Exportação de dados
 Preencha `GOOGLE_SHEETS_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL` e `GOOGLE_PRIVATE_KEY` no arquivo `.env` para habilitar a exportação para o Google Sheets.
 Acesse `/admin/export` para enviar as métricas dos usuários para a aba `Usuarios` da planilha.
