@@ -38,7 +38,7 @@
   { "id":"charada_314","categoria":"charadas","nivel":"facil","pergunta":"Qual é o queijo que mais sente dor?","resposta":"O queijo ralado","explicacao":"Ralar o queijo lembra que ele foi 'machucado'."},
   { "id":"charada_315","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: uma pergunta que você nunca pode responder com 'sim'?","resposta":"Você está dormindo?","explicacao":"Quem está dormindo não consegue responder."},
   { "id":"charada_316","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: quanto mais seca, mais molhada fica?","resposta":"A toalha","explicacao":"A toalha fica úmida ao secar algo."},
-  { "id":"charada_317","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: tem cidades, lojas, ruas e nenhuma pessoa?","resposta":"O mapa","explicacao":"O mapa mostra locais, mas não pessoas reais."}
+   { "id":"charada_317","categoria":"charadas","nivel":"facil","pergunta":"O que é o que é: tem cidades, lojas, ruas e nenhuma pessoa?","resposta":"O mapa","explicacao":"O mapa mostra locais, mas não pessoas reais."},
   { "id":"charada_310","categoria":"charadas","nivel":"facil","pergunta":"O que é, o que é: se você der, ela fica pequena; se tirar, fica grande?","resposta":"A tesoura no cabelo","explicacao":"Corta cabelo (menor) e quando deixa crescer (maior)."},
   { "id":"matematica_111","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 7 + 5?","resposta":"12","explicacao":"Somar 7 e 5 resulta em 12."},
   { "id":"matematica_112","categoria":"matematica","nivel":"facil","pergunta":"Quanto é 9 − 4?","resposta":"5","explicacao":"Subtrair 4 de 9 resulta em 5."},
