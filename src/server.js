@@ -13,5 +13,5 @@ process.on('unhandledRejection', err => {
 });
 
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => console.log(`Servidor ouvindo na porta ${PORT}`));
+  app.listen(PORT, () => console.log(`🚀 Lumi listening on port ${PORT}`));
 }
