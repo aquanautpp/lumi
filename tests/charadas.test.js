@@ -16,7 +16,7 @@ function flesch(text) {
 describe('charadas', () => {
   test('todas possuem boa legibilidade', () => {
     desafios.charada.forEach(c => {
-      expect(flesch(c.enunciado)).toBeGreaterThan(50);
+      expect(flesch(c.pergunta)).toBeGreaterThan(50);
     });
   });
 });
