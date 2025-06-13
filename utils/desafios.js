@@ -6,17 +6,17 @@ import { desafiosPendentes, salvarMemoria, memoriaUsuarios } from './memoria.js'
 export const desafios = {
   matematica: [
     { enunciado: 'Quanto é 7 x 6?', resposta: '42', tipo: 'narrativo' },
-    { enunciado: 'Qual é o dobro de 5?', resposta: '10', tipo: 'visual' },
+    // { enunciado: 'Qual é o dobro de 5?', resposta: '10', tipo: 'visual' },
     { enunciado: 'Se você tem 12 balas e come 5, quantas sobram?', resposta: '7', tipo: 'auditivo' },
-    { enunciado: 'Quanto é 10 - 4?', resposta: '6', tipo: 'visual' },
-    { enunciado: 'Quanto é a metade de 20?', resposta: '10', tipo: 'visual' },
+    // { enunciado: 'Quanto é 10 - 4?', resposta: '6', tipo: 'visual' },
+    // { enunciado: 'Quanto é a metade de 20?', resposta: '10', tipo: 'visual' },
     { enunciado: 'Quantos lados tem um quadrado?', resposta: '4', tipo: 'auditivo' }
   ],
   logica: [
-    { enunciado: '🟩🟨🟨 = 7. Quanto vale 🟩?', resposta: '3', tipo: 'visual' },
-    { enunciado: '🐶🐶🐱 = 9. Se 🐱 = 3, quanto vale 🐶?', resposta: '3', tipo: 'visual' },
-    { enunciado: '👟👟 + 🎒 = 5. Se 🎒 = 3, quanto vale 👟?', resposta: '1', tipo: 'visual' },
-    { enunciado: 'João tem 2 pares de meias. Quantas meias ele tem?', resposta: '4', tipo: 'visual' },
+    // { enunciado: '🟩🟨🟨 = 7. Quanto vale 🟩?', resposta: '3', tipo: 'visual' },
+    // { enunciado: '🐶🐶🐱 = 9. Se 🐱 = 3, quanto vale 🐶?', resposta: '3', tipo: 'visual' },
+    // { enunciado: '👟👟 + 🎒 = 5. Se 🎒 = 3, quanto vale 👟?', resposta: '1', tipo: 'visual' },
+    // { enunciado: 'João tem 2 pares de meias. Quantas meias ele tem?', resposta: '4', tipo: 'visual' },
     {
       enunciado: '🧠 Pedro vê 5 pássaros numa árvore. Ele atira em 1. Quantos pássaros continuam lá?',
       resposta: '0',
@@ -24,35 +24,35 @@ export const desafios = {
     }
   ],
   portugues: [
-    { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães', tipo: 'visual' },
+    // { enunciado: 'Qual é o plural de "cão"?', resposta: 'cães', tipo: 'visual' },
     { enunciado: 'Qual é o contrário de "grande"?', resposta: 'pequeno', tipo: 'auditivo' },
     { enunciado: 'Como se escreve "arroz": com Z ou S?', resposta: 'z', tipo: 'narrativo' },
-     { enunciado: 'Qual é o aumentativo de "casa"?', resposta: 'casarão', tipo: 'visual' },
+    // { enunciado: 'Qual é o aumentativo de "casa"?', resposta: 'casarão', tipo: 'visual' },
     { enunciado: 'Qual é a forma correta: coração ou coraçao?', resposta: 'coração', tipo: 'narrativo' },
     { enunciado: 'Diga um sinônimo de "alegre"', resposta: 'feliz', tipo: 'auditivo' },
-    { enunciado: 'Complete: "Minha família ____ reunida hoje"', resposta: 'está', tipo: 'visual' },
+    // { enunciado: 'Complete: "Minha família ____ reunida hoje"', resposta: 'está', tipo: 'visual' },
     { enunciado: 'Quem é o sujeito em "A menina leu um livro"?', resposta: 'a menina', tipo: 'narrativo' },
-    { enunciado: 'Quem é o personagem principal da história "Chapeuzinho Vermelho"?', resposta: 'chapeuzinho vermelho', tipo: 'visual' }
+    // { enunciado: 'Quem é o personagem principal da história "Chapeuzinho Vermelho"?', resposta: 'chapeuzinho vermelho', tipo: 'visual' }
   ],
   ciencias: [
     { enunciado: 'Qual órgão bombeia o sangue pelo corpo?', resposta: 'coração', tipo: 'narrativo' },
-    { enunciado: 'Em qual estado da matéria está o gelo?', resposta: 'sólido', tipo: 'visual' },
+    // { enunciado: 'Em qual estado da matéria está o gelo?', resposta: 'sólido', tipo: 'visual' },
     { enunciado: 'Que animal é conhecido como rei da selva?', resposta: 'leão', tipo: 'auditivo' },
-    { enunciado: 'Qual vitamina encontramos na laranja?', resposta: 'c', tipo: 'visual' },
+    // { enunciado: 'Qual vitamina encontramos na laranja?', resposta: 'c', tipo: 'visual' },
     { enunciado: 'Reciclar papel ajuda a salvar qual recurso natural?', resposta: 'árvores', tipo: 'narrativo' }
   ],
   historia: [
     { enunciado: 'Entre quais anos o Brasil foi colônia de Portugal?', resposta: '1500 a 1822', tipo: 'narrativo' },
-    { enunciado: 'Quem foi o primeiro presidente do Brasil?', resposta: 'deodoro da fonseca', tipo: 'visual' },
+    // { enunciado: 'Quem foi o primeiro presidente do Brasil?', resposta: 'deodoro da fonseca', tipo: 'visual' },
     { enunciado: 'Quantos anos tem um século?', resposta: '100', tipo: 'auditivo' },
-    { enunciado: 'O que celebramos em 7 de Setembro?', resposta: 'independência do brasil', tipo: 'visual' },
+    // { enunciado: 'O que celebramos em 7 de Setembro?', resposta: 'independência do brasil', tipo: 'visual' },
     { enunciado: 'Qual civilização construiu as pirâmides de Gizé?', resposta: 'egito antigo', tipo: 'narrativo' }
   ],
   charada: [
-    { enunciado: 'O que é cheio de buracos mas ainda consegue segurar água?', resposta: 'esponja', tipo: 'narrativo' },
-    { enunciado: 'O que tem pescoço mas não tem cabeça?', resposta: 'garrafa', tipo: 'auditivo' },
-    { enunciado: 'Quanto mais seca, mais molhada fica. O que é?', resposta: 'toalha', tipo: 'cinestesico' },
-    { enunciado: 'O que se quebra se falamos?', resposta: 'silencio', tipo: 'narrativo' }
+    { enunciado: 'O que é verde e fica no canto da sala? (Dica: é uma planta)', resposta: 'vaso', tipo: 'narrativo' },
+    { enunciado: 'O que tem folhas mas não é árvore? (Dica: usamos para ler)', resposta: 'livro', tipo: 'auditivo' },
+    { enunciado: 'O que anda com você mas nunca está sozinho? (Dica: parte do corpo)', resposta: 'sombra', tipo: 'cinestesico' },
+    { enunciado: 'O que tem chaves mas não abre portas? (Dica: toca música)', resposta: 'piano', tipo: 'narrativo' }
   ],
   visual: [
     {
@@ -85,9 +85,9 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) 
 export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   const lista = desafios[categoria];
   if (!lista) return null;
-   let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
+  let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
   filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
-    filtrados = filtrarResolvidos(lista, numero);
+  filtrados = filtrarResolvidos(filtrados, numero);
   }
   return filtrados[Math.floor(Math.random() * filtrados.length)];
 }
