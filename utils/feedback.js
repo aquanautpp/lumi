@@ -62,11 +62,14 @@ const feedbacksGenericos = {
   ]
 };
 
-export function gerarFeedback(acertou, estilo) {
+export function gerarFeedback(acertou, estilo, state) {
+  if (state && state.feedbackSent) return null;
   const tipo = acertou ? 'acerto' : 'erro';
   let mensagens = feedbacksGenericos[tipo];
   if (estilo && feedbacksPorEstilo[estilo]) {
     mensagens = feedbacksPorEstilo[estilo][tipo];
   }
-  return mensagens[Math.floor(Math.random() * mensagens.length)];
+  const msg = mensagens[Math.floor(Math.random() * mensagens.length)];
+  if (state) state.feedbackSent = true;
+  return msg;
 }
