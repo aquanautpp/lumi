@@ -10,7 +10,6 @@ import {
   missoesPendentes,
   salvarMemoria,
   definirNome,
-  definirMascote
 } from '../utils/memoria.js';
 import { gerarFeedback } from '../utils/feedback.js';
 import { atualizarMemoria } from '../utils/historico.js';
