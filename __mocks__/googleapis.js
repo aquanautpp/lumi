@@ -1,7 +1,8 @@
 export const google = {
+  auth: { JWT: class {} },
   sheets: () => ({
-    spreadsheets: { values: { append: async (opts) => {
-      console.log('📊  (MOCK Sheets) append', opts.resource.values);
+    spreadsheets: { values: { update: async (opts) => {
+      console.log('📊  (MOCK Sheets) append', opts.requestBody.values);
       return { status: 200 };
     }}}
   })
