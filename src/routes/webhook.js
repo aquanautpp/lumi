@@ -106,14 +106,19 @@ export default function webhookRouter({
     if (usuario.aguardandoRespostaFinal) {
       usuario.aguardandoRespostaFinal = false;
       usuario.respostaFinal = texto;
-      if (textoSemAcento.includes('sim')) {
-        await enviarMensagemWhatsApp(from, 'Oba! Aqui está o menu principal:', comandosRapidos);
-      } else {
+        if (['sim','✅ sim','a'].includes(textoLower)) {
+        await enviarMensagemWhatsApp(from, '🎉 Que ótimo! Aqui está o link da versão oficial da Lumi: https://lumi.app');
+        await salvarMemoria();
+        return res.sendStatus(200);
+      }
+      if (['parar','cancelar','sair','não por enquanto','nao por enquanto','❌'].includes(textoLower)) {
         usuario.bloqueado = true;
         await enviarMensagemWhatsApp(from, 'Tudo bem! Estarei por aqui quando quiser voltar 💜');
+        await salvarMemoria();
+        return res.sendStatus(200);
       }
       await salvarMemoria();
-      return res.sendStatus(200);
+      // se não reconheceu, prossegue normalmente
     }
     usuario.historico = usuario.historico || [];
 
@@ -126,14 +131,36 @@ export default function webhookRouter({
       return res.sendStatus(200);
     }
 
+    // Mapear letras A–D como resposta de múltipla escolha
+    if (['a','b','c','d'].includes(textoLower)) {
+      req.body.Body = textoLower;
+      texto = textoLower;
+      textoSemAcento = textoLower;
+      // deixa cair no validador de desafio pendente
+    }
+
     const respondeuEstilo = await processarRespostaEstilo(from, texto);
     if (respondeuEstilo) return res.sendStatus(200);
 
-    usuario.interacoes = (usuario.interacoes || 0) + 1;
-    if (usuario.interacoes >= LIMITE_INTERACOES) {
-      usuario.aguardandoRespostaFinal = true;
+    /* ----- CONTADOR DE INTERAÇÕES ----- */
+    if (!usuario.interacoes) usuario.interacoes = 0;
+    // Não conta as mensagens de "aventura"
+    if (!textoLower.includes('aventura')) usuario.interacoes += 1;
+
+    if (usuario.interacoes === 20) {
+      await enviarMensagemWhatsApp(
+        from,
+        '🌟 Você testou bastante! Gostaria de usar a versão oficial da Lumi?',
+        [{ title:'✅ Sim!', body:'Sim' }, { title:'❌ Não por enquanto', body:'Não' }]
+      );
       await salvarMemoria();
-      await enviarMensagemFinalDeTeste(from);
+      return res.sendStatus(200);
+    }
+
+    const LIMITE = parseInt(process.env.LIMITE_INTERACOES || '100', 10);
+    if (usuario.interacoes >= LIMITE) {
+      await enviarMensagemWhatsApp(from, 'Tudo bem! Estarei por aqui quando quiser voltar 💜');
+      await salvarMemoria();
       return res.sendStatus(200);
     }
     await salvarMemoria();
@@ -171,7 +198,7 @@ export default function webhookRouter({
       return res.sendStatus(200);
     }
 
-    if (['parar', 'cancelar', 'sair'].includes(textoLower)) {
+    if (['parar','cancelar','sair','não por enquanto','nao por enquanto','❌'].includes(textoLower)) {
       delete missoesPendentes[from];
       delete desafiosPendentes[from];
       await enviarMensagemWhatsApp(from, 'Tudo bem, a gente pode continuar depois! 💛');
@@ -290,7 +317,6 @@ export default function webhookRouter({
       const estilo = usuario.learningStyle || null;
       if (resultado.acertou) {
         registrarDesafioResolvido(from, desafio);
-        if (fb) await enviarMensagemWhatsApp(from, fb);
         const msgNivel = verificarNivel(usuario);
         if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
         delete desafiosPendentes[from];
