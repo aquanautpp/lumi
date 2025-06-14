@@ -1,8 +1,12 @@
+process.env.NODE_ENV = 'test';              // desliga validação rígida
+process.env.OPENAI_API_KEY   ??= 'dummy';
+process.env.WHATSAPP_TOKEN   ??= 'dummy';
+process.env.VERIFY_TOKEN     ??= 'test';
+process.env.PHONE_ID         ??= 'dummy';
+process.env.MOCK = '1';                     // garante uso dos mocks
+
 import app from '../src/app.js';
 import request from 'supertest';
-
-process.env.MOCK = '1';                         // garante uso dos mocks
-const FROM = 'whatsapp:+5511999999999';         // número fictício
 
 async function simulate(body) {
   global.__twiMLMessages = [];
