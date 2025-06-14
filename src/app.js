@@ -2,8 +2,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
+import nlp from 'compromise';
 import { enviarMensagemWhatsApp, enviarMidiaWhatsApp } from '../utils/whatsapp.js';
-import { escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido, selecionarDesafioPorCategoriaEEstilo } from '../utils/desafios.js';
+import {
+  escolherDesafioPorCategoria, gerarMissao, enviarCharadaVisual, registrarDesafioResolvido, selecionarDesafioPorCategoriaEEstilo,
+} from '../utils/desafios.js';
 import {
   memoriaUsuarios,
   desafiosPendentes,
@@ -18,7 +21,6 @@ import { validarResposta, validarTentativas } from '../utils/validacao.js';
 import { exportarParaGoogleSheets } from '../utils/analytics.js';
 import { obterDesafioDoDia } from '../utils/rotinaSemanal.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from '../utils/learningStyle.js';
-import nlp from 'compromise';
 import { gerarRespostaIA } from '../utils/ia.js';
 import { enviarDesafioFamilia } from '../utils/desafioFamilia.js';
 import { enviarDesafioVidaReal } from '../utils/desafiosVidaReal.js';
@@ -36,11 +38,11 @@ function validateEnv() {
   const missing = [];
 
   if (usingTwilio) {
-    ['TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER'].forEach(v => {
+    ['TWILIO_AUTH_TOKEN', 'TWILIO_WHATSAPP_NUMBER'].forEach((v) => {
       if (!process.env[v]) missing.push(v);
     });
   } else {
-    ['WHATSAPP_TOKEN', 'VERIFY_TOKEN'].forEach(v => {
+    ['WHATSAPP_TOKEN', 'VERIFY_TOKEN'].forEach((v) => {
       if (!process.env[v]) missing.push(v);
     });
     if (!process.env.PHONE_ID && !process.env.FROM_PHONE_ID) missing.push('PHONE_ID');
@@ -49,7 +51,7 @@ function validateEnv() {
   if (!process.env.OPENAI_API_KEY) missing.push('OPENAI_API_KEY');
 
   if (missing.length) {
-    console.error('Missing environment variables: ' + missing.join(', '));
+    console.error(`Missing environment variables: ${missing.join(', ')}`);
     process.exit(1);
   }
 }
@@ -73,14 +75,14 @@ app.get('/webhook', (req, res) => {
 });
 
 const comandosRapidos = [
-  { title: "📚 Missão do Dia", body: "Quero a missão do dia" },
-  { title: "🧠 Me dá um desafio", body: "Quero um desafio" },
-  { title: "❓Quem é você?", body: "Quem é você?" }
+  { title: '📚 Missão do Dia', body: 'Quero a missão do dia' },
+  { title: '🧠 Me dá um desafio', body: 'Quero um desafio' },
+  { title: '❓Quem é você?', body: 'Quem é você?' },
 ];
 
 const OPCOES_FINAIS = [
-  { title: "✅ Sim!", body: "Sim!" },
-  { title: "❌ Não por enquanto", body: "Não por enquanto" }
+  { title: '✅ Sim!', body: 'Sim!' },
+  { title: '❌ Não por enquanto', body: 'Não por enquanto' },
 ];
 
 function extrairTexto(message) {
@@ -99,18 +101,17 @@ function normalizarTexto(texto) {
 }
 
 function enviarMensagemFinalDeTeste(numero) {
-  const mensagem =
-    "🌟 Você chegou ao fim do modo de teste! Aqui vão algumas dicas para aprender melhor:\n" +
-    "1️⃣ Faça perguntas sempre que ficar curioso.\n" +
-    "2️⃣ Explique o que aprendeu para alguém.\n" +
-    "3️⃣ Crie desenhos ou mapas para suas ideias.\n" +
-    "Que tal ler o livro 'Como um Cientista Aprende'?\n\n" +
-    "Você gostaria de brincar com a versão oficial da Lumi?";
+  const mensagem = '🌟 Você chegou ao fim do modo de teste! Aqui vão algumas dicas para aprender melhor:\n'
+    + '1️⃣ Faça perguntas sempre que ficar curioso.\n'
+    + '2️⃣ Explique o que aprendeu para alguém.\n'
+    + '3️⃣ Crie desenhos ou mapas para suas ideias.\n'
+    + "Que tal ler o livro 'Como um Cientista Aprende'?\n\n"
+    + 'Você gostaria de brincar com a versão oficial da Lumi?';
   return enviarMensagemWhatsApp(numero, mensagem, OPCOES_FINAIS);
 }
 
 const comandosDetalhados = [
-"📚 'Quero a missão do dia' - Receber três desafios especiais",
+  "📚 'Quero a missão do dia' - Receber três desafios especiais",
   "🧠 'Quero um desafio' - Desafio do dia",
   "❓ 'Quem é você?' - Saber sobre a Lumi",
   "📈 'Qual meu nível?' - Ver seu progresso",
@@ -119,14 +120,14 @@ const comandosDetalhados = [
   "🏠 'Desafio da vida real' - Tarefas para fazer em casa",
   "🌋 'Aventura' - Desafio temático",
   "❓ 'Charada' - Enviar uma charada divertida",
-  "🛑 'Parar' - Cancelar missões ou desafios"
+  "🛑 'Parar' - Cancelar missões ou desafios",
 ];
 
 function enviarListaComandos(numero) {
-  const textoComandos = comandosDetalhados.join("\n");
+  const textoComandos = comandosDetalhados.join('\n');
   return enviarMensagemWhatsApp(
     numero,
-    `Aqui estão alguns comandos que posso entender:\n${textoComandos}`
+    `Aqui estão alguns comandos que posso entender:\n${textoComandos}`,
   );
 }
 
@@ -134,7 +135,7 @@ function enviarBoasVindas(numero) {
   return enviarMensagemWhatsApp(
     numero,
     "Oi, eu sou a Lumi 💛. Peça o 'menu' para ver meus comandos e escreva 'Meu estilo' se quiser descobrir seu jeito de aprender!",
-    comandosRapidos
+    comandosRapidos,
   );
 }
 
@@ -145,7 +146,7 @@ app.get('/admin', (req, res) => {
     nivel: dados.nivelAtual || 1,
     missoesPendentes: missoesPendentes[numero]?.desafios?.length || 0,
     desafiosPendentes: desafiosPendentes[numero] ? 1 : 0,
-    historico: (dados.historico || []).length
+    historico: (dados.historico || []).length,
   }));
   res.json({ usuarios });
 });
@@ -169,7 +170,7 @@ app.use(webhookRouter({
   comandosDetalhados,
   enviarListaComandos,
   enviarBoasVindas,
-  LIMITE_INTERACOES
+  LIMITE_INTERACOES,
 }));
 
 app.get('/health', (req, res) => {
