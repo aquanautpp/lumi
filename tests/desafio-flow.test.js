@@ -28,10 +28,7 @@ test('flow via webhook with Twilio payload', async () => {
   expect(res.text).toMatch(/quer que eu te chame/i);
 
   res = await request(app).post('/webhook').send({ From: from, Body: 'Bob' });
-  expect(res.text).toMatch(/qual mascote/i);
-
-  res = await request(app).post('/webhook').send({ From: from, Body: 'Fofuxa' });
-  expect(res.text).toMatch(/Fofuxa/);
+  expect(res.text).toMatch(/muito prazer/i);
 
   res = await request(app).post('/webhook').send({ From: from, Body: 'Quero um desafio' });
   expect(res.text).toMatch(/Desafio/);
