@@ -32,16 +32,6 @@ export async function definirNome(numero, nome) {
   await salvarMemoria();
 }
 
-export function obterMascote(numero) {
-  return memoriaUsuarios[numero]?.mascote || null;
-}
-
-export async function definirMascote(numero, mascote) {
-  if (!memoriaUsuarios[numero]) memoriaUsuarios[numero] = {};
-  memoriaUsuarios[numero].mascote = mascote;
-  await salvarMemoria();
-}
-
 async function carregarMemoria() {
   if (process.env.DB_TYPE === 'sqlite') {
     try {
