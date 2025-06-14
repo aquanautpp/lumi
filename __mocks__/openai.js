@@ -1,5 +1,5 @@
-module.exports = {
+export default {
   chat: { completions: { create: async () => ({
-    choices: [{ message: { content: '[RESPOSTA MOCKADA DA LUMI]' } }]
+    choices: [{ message: { content: '[MOCK-OPENAI]' } }]
   }) } }
 };
