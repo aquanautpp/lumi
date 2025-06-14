@@ -1,9 +1,10 @@
-const fs = require('fs');
-process.env.DATA_DIR = './tmp-test';
-
 module.exports = {
   testEnvironment: 'node',
   verbose: true,
-  transform: {},
-  setupFiles: ['./tests/setup.js']
+  moduleNameMapper: {
+    '^openai$': '<rootDir>/__mocks__/openai.js',
+    '^twilio$': '<rootDir>/__mocks__/twilio.js',
+    '^googleapis$': '<rootDir>/__mocks__/googleapis.js'
+  },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
 };
