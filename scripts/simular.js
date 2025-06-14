@@ -31,6 +31,9 @@ await simulate(FROM, 'Oi');
 await simulate(FROM, 'Desafio de lógica');
 await simulate(FROM, '5');
 await simulate(FROM, 'missão do dia');
-await simulate(FROM, 'trilha');
+await simulate(FROM, 'aventura');     // inicia
+await simulate(FROM, 'A');            // 1ª resposta
+await simulate(FROM, 'B');            // 2ª resposta
+await simulate(FROM, 'C');            // …até encerrar
 await simulate(FROM, 'qual era a resposta');
 console.log('✅  Simulação concluída.');
