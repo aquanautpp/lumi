@@ -8,15 +8,13 @@ import {
   desafiosPendentes,
   missoesPendentes,
   salvarMemoria,
-  definirNome,
-  definirMascote
+  definirNome
 } from '../../utils/memoria.js';
 import { gerarFeedback } from '../../utils/feedback.js';
 import { atualizarMemoria } from '../../utils/historico.js';
 import { verificarNivel, obterNivel } from '../../utils/niveis.js';
 import { validarResposta, validarTentativas } from '../../utils/validacao.js';
 import { obterDesafioDoDia } from '../../utils/rotinaSemanal.js';
-import { getFala } from '../../utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from '../../utils/learningStyle.js';
 import { gerarRespostaIA } from '../../utils/ia.js';
 import { enviarDesafioFamilia } from '../../utils/desafioFamilia.js';
@@ -120,25 +118,10 @@ router.post('/webhook', async (req, res) => {
 
   if (usuario.etapaCadastro === 'nome') {
     await definirNome(from, texto);
-    usuario.etapaCadastro = 'mascote';
+    usuario.etapaCadastro = null;
     await salvarMemoria();
-    await enviarMensagemWhatsApp(from, `Muito prazer, ${texto}! Qual mascote você quer? 🦊 Fofuxa ou 🐻 Bolotinha?`);
-    return res.sendStatus(200);
-  }
-
-  if (usuario.etapaCadastro === 'mascote') {
-    let mascote = null;
-    if (textoSemAcento.includes('fofuxa')) mascote = 'Fofuxa';
-    if (textoSemAcento.includes('bolotinha')) mascote = 'Bolotinha';
-      if (mascote) {
-        await definirMascote(from, mascote);
-        usuario.etapaCadastro = null;
-        await salvarMemoria();
-      await enviarMensagemWhatsApp(from, `${mascote} está animada para te ver brilhar, ${usuario.nome}!`);
-      await enviarBoasVindas(from);
-    } else {
-      await enviarMensagemWhatsApp(from, 'Escolha entre Fofuxa ou Bolotinha 😉');
-    }
+      await enviarMensagemWhatsApp(from, `Muito prazer, ${texto}!`);
+    await enviarBoasVindas(from);
     return res.sendStatus(200);
   }
 
@@ -306,12 +289,7 @@ if (["menu", "ajuda", "lista de comandos"].some(t => textoLower.includes(t))) {
     const estilo = usuario.learningStyle || null;
     if (resultado.acertou) {
       registrarDesafioResolvido(from, desafio);
-      const fb = gerarFeedback(true, estilo, desafio);
-      const feedback = fb ? `${fb} ${getFala('acerto')}` : null;
-      if (feedback) await enviarMensagemWhatsApp(from, feedback);
-        if (['portugues','ciencias','historia'].includes(desafio.categoria)) {
-        await enviarMensagemWhatsApp(from, getFala(desafio.categoria));
-      }
+      if (fb) await enviarMensagemWhatsApp(from, fb);
       const msgNivel = verificarNivel(usuario);
       if (msgNivel) await enviarMensagemWhatsApp(from, msgNivel);
       delete desafiosPendentes[from];
