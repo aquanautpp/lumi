@@ -17,8 +17,11 @@ export async function enviarMensagemWhatsApp(numero, mensagem, opcoes = null, te
   
   if (usuario?.nome) {
     mensagem = mensagem.replace(/\{nome\}/gi, usuario.nome);
-    if (!mensagem.startsWith(usuario.nome)) {
-      mensagem = `${usuario.nome}, ${mensagem}`;
+    if (!usuario.saudado) {
+      usuario.saudado = true;
+      if (!mensagem.startsWith(usuario.nome)) {
+        mensagem = `${usuario.nome}, ${mensagem}`;
+      }
     }
   }
 
