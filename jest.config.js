@@ -1,3 +1,4 @@
 export default {
-  testPathIgnorePatterns: ['/lumi/lumi/']
+  testEnvironment: 'node',
+  verbose: true
 };
