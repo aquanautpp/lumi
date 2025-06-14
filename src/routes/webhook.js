@@ -180,7 +180,7 @@ export default function webhookRouter({
 
     if (['qual era a resposta', 'me explica', 'qual a explicacao', 'qual a explicação'].some((t) => textoLower.includes(t))) {
       const desafio = desafiosPendentes[from];
-      const msg = explainCurrent(desafio);
+      const msg = await explainCurrent(desafio);
       await enviarMensagemWhatsApp(from, msg);
       return res.sendStatus(200);
     }
