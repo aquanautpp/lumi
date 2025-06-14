@@ -1,9 +1,4 @@
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { chatCompletion } from "./openaiClient.js";
 
 const cache = new Map();
 const TTL = 5 * 60 * 1000; // 5 minutes
@@ -15,21 +10,15 @@ async function openaiRequest(key, messages, temperature = 0.7) {
     return cached.value;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
   try {
-    const res = await openai.chat.completions.create({
+    const { content } = await chatCompletion(messages, {
       model: 'gpt-4o',
-      messages,
-      temperature,
-      signal: controller.signal
+      temperature
     });
-    clearTimeout(timeout);
-    const msg = res.choices[0]?.message?.content || '';
+    const msg = content || '';
     cache.set(key, { time: now, value: msg });
     return msg;
   } catch (err) {
-    clearTimeout(timeout);
     console.error('OpenAI error:', err.message);
     return 'Desculpe, não consegui pensar nisso agora 🤖';
   }
