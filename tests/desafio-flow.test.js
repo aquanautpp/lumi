@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { jest } from '@jest/globals';
+import fs from 'fs/promises';
 
 let app;
 let openaiRequest;
@@ -8,7 +9,8 @@ beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   process.env.OPENAI_API_KEY = 'test';
   process.env.JSON_PATH = 'tmp/flow_mem.json';
-  await (await import('fs/promises')).mkdir('tmp', { recursive: true });
+  await fs.mkdir('tmp', { recursive: true });
+  await fs.writeFile('tmp/flow_mem.json', '{}');
 
   jest.unstable_mockModule('../utils/openai.js', () => ({
     openaiRequest: jest.fn(async () => 'IA resposta'),
