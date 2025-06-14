@@ -1,4 +1,12 @@
+import runSelfCheck from './selfcheck.js';
 import app from './app.js';
+
+try {
+  await runSelfCheck();
+} catch (err) {
+  console.error(err);
+  process.exit(1);
+}
 
 const PORT = process.env.PORT || 3000;
 
