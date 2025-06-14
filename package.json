@@ -20,17 +20,16 @@
     "openai": "^4.30.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
-    "xlsx": "^0.18.5",
     "twilio": "^4.5.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@jest/globals": "^30.0.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31.0",
     "jest": "^30.0.0",
-    "@jest/globals": "^30.0.0",
-    "supertest": "^6.3.4",
-    "jest-environment-node": "^30.0.0"
+    "jest-environment-node": "^30.0.0",
+    "supertest": "^6.3.4"
   }
 }
