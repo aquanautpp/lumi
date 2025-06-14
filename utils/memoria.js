@@ -6,7 +6,7 @@ import { logError } from './logger.js';
 
 dotenv.config();
 
-const BASE_DIR = '/data';
+const BASE_DIR = process.env.DATA_DIR || '.';
 const MEMORIA_PATH = process.env.JSON_PATH || `${BASE_DIR}/memoria.json`;
 const DESAFIOS_PATH = `${BASE_DIR}/desafiosPendentes.json`;
 const MISSOES_PATH = `${BASE_DIR}/missoesPendentes.json`;
