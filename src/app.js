@@ -18,7 +18,6 @@ import { verificarNivel, obterNivel } from '../utils/niveis.js';
 import { validarResposta, validarTentativas } from '../utils/validacao.js';
 import { exportarParaGoogleSheets } from '../utils/analytics.js';
 import { obterDesafioDoDia } from '../utils/rotinaSemanal.js';
-import { getFala } from '../utils/mascote.js';
 import { aplicarPerguntaEstilo, processarRespostaEstilo } from '../utils/learningStyle.js';
 import nlp from 'compromise';
 import { gerarRespostaIA } from '../utils/ia.js';
