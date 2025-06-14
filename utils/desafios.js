@@ -48,10 +48,11 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) 
 export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   const lista = desafios[categoria];
   if (!lista) return null;
-  let filtrados = estilo ? lista.filter(d => d.tipo === estilo) : lista;
-  filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
-  filtrados = filtrarResolvidos(filtrados, numero);
-  return filtrados[Math.floor(Math.random() * filtrados.length)];
+  let possiveis = estilo ? lista.filter(d => d.tipo === estilo) : lista;
+  possiveis = possiveis.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
+  possiveis = filtrarResolvidos(possiveis, numero);
+  if (!possiveis.length) possiveis = filtrarResolvidos(lista, numero); // fallback
+  return possiveis[Math.floor(Math.random() * possiveis.length)];
 }
 
 export function gerarMissao(estilo = null, numero) {
