@@ -4,7 +4,16 @@ import { fileURLToPath, pathToFileURL } from 'url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const mapPath = path.join(root, '..', 'export-map.json');
-const exportsMap = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+let exportsMap = {};
+try {
+  exportsMap = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+} catch (err) {
+  if (err.code === 'ENOENT') {
+    fs.writeFileSync(mapPath, JSON.stringify(exportsMap, null, 2));
+  } else {
+    throw err;
+  }
+}
 
 function abs(p) {
   return pathToFileURL(path.resolve(root, '..', p)).href;
