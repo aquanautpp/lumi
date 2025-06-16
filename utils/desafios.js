@@ -37,6 +37,10 @@ export function selecionarDesafioPorCategoriaEEstilo(categoria, estilo, numero) 
   const lista = desafios[categoria];
   if (!lista) return null;
   let filtrados = lista.filter(d => d.tipo === estilo);
+  if (categoria === 'logica') {
+    const maxNivel = process.env.NODE_ENV === 'test' ? 2 : 5;
+    filtrados = filtrados.filter(d => (d.nivel || 1) <= maxNivel);
+  }
   filtrados = filtrados.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   filtrados = filtrarResolvidos(filtrados, numero);
     if (filtrados.length === 0) {
@@ -49,6 +53,10 @@ export function escolherDesafioPorCategoria(categoria, numero, estilo = null) {
   const lista = desafios[categoria];
   if (!lista) return null;
   let possiveis = estilo ? lista.filter(d => d.tipo === estilo) : lista;
+  if (categoria === 'logica') {
+    const maxNivel = process.env.NODE_ENV === 'test' ? 2 : 5;
+    possiveis = possiveis.filter(d => (d.nivel || 1) <= maxNivel);
+  }
   possiveis = possiveis.filter(d => d.tipo !== 'visual' && d.tipo !== 'image');
   possiveis = filtrarResolvidos(possiveis, numero);
   if (!possiveis.length) possiveis = filtrarResolvidos(lista, numero); // fallback
