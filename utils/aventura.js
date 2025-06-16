@@ -3,24 +3,24 @@ import { memoriaUsuarios, desafiosPendentes, salvarMemoria } from './memoria.js'
 
 const etapas = [
   {
-    texto: 'Você entrou na Caverna Sombria. Para acender a tocha, resolva:',
+    texto: `🏞️ *Capítulo 1 – O Chamado da Montanha*\nVocê encontrou um mapa antigo embaixo da sua cama... Ele fala de um tesouro perdido na Caverna dos Desafios. Ao chegar à entrada da caverna, uma tocha apagada bloqueia a passagem. Para acendê-la, resolva:`,
     desafio: { categoria: 'matematica', tipo: 'narrativo' },
-    conclusao: 'A caverna se ilumina e revela uma passagem secreta.'
+    conclusao: '🔥 A tocha se acende magicamente, revelando uma escadaria em espiral que desce para as profundezas...'
   },
   {
-    texto: 'Na ponte quebradiça há um enigma. Para atravessar, responda:',
+    texto: `🌉 *Capítulo 2 – A Ponte das Sombras*\nVocê encontra uma ponte feita de cordas velhas e tábuas podres. Um eco misterioso sussurra um enigma no seu ouvido. Para atravessar com segurança, descubra a resposta:`,
     desafio: { categoria: 'logica', tipo: 'auditivo' },
-    conclusao: 'A ponte se estabiliza e você continua o caminho.'
+    conclusao: '🌫️ Ao resolver o enigma, a névoa se dissipa e a ponte se torna firme como pedra.'
   },
   {
-    texto: 'Um guardião da floresta quer testar seus conhecimentos:',
+    texto: `🌳 *Capítulo 3 – O Guardião da Floresta Encantada*\nUma criatura sábia, metade coruja, metade onça, surge entre as árvores. Ela diz: "Só os que dominam os mistérios da natureza podem passar por mim." Prove seu valor!`,
     desafio: { categoria: 'ciencias', tipo: 'narrativo' },
-    conclusao: 'O guardião permite sua passagem.'
+    conclusao: '🦉 A criatura sorri e desaparece em uma nuvem de folhas. Um novo caminho se abre diante de você.'
   },
   {
-    texto: 'A porta do tesouro pede uma última senha:',
+    texto: `🏰 *Capítulo 4 – A Porta dos Mil Segredos*\nFinalmente, você chega à sala do tesouro. Mas uma porta de pedra mágica exige a palavra final. A dica está em um antigo pergaminho...`,
     desafio: { categoria: 'portugues', tipo: 'narrativo' },
-    conclusao: 'Parabéns! Você concluiu a aventura e encontrou o tesouro!'
+    conclusao: '🏆 A porta se abre lentamente... e você encontra o tesouro perdido! Uma coroa feita de estrelas e livros encantados!'
   }
 ];
 
