@@ -45,7 +45,7 @@ Envie mensagens no WhatsApp com os seguintes textos para interagir com a Lumi:
 - `Quero um desafio`
 - `Quem é você?`
 - `Qual meu nível?`
-`Meu estilo`
+- `Meu estilo`
 - `Desafio em família`
 - `Desafio da vida real`
 - `Aventura`
