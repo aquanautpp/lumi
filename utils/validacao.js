@@ -63,7 +63,7 @@ function validarTentativas(respostaUsuario, desafio) {
   }
 
   if (acertou) {
-    return { acertou: true };
+    return { acertou: true, dica: '🎉 Você acertou a charada!' };
   }
 
   const dicasPadrao = [
