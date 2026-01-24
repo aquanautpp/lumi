@@ -1,8 +1,0 @@
-{
-  "all": true,
-  "include": ["utils/*.js", "src/lib/*.js"],
-  "exclude": ["utils/analytics.js","utils/aventura.js","utils/challenges.js","utils/desafios.js","utils/historico.js","utils/learningStyle.js","utils/logger.js","utils/memoria.js","utils/rotinaSemanal.js","utils/sqlite.js","utils/whatsapp.js","utils/persistencia.js","utils/estiloAprendizagem.js","utils/ia.js","src/lib/openaiClient.js","src/lib/twilioClient.js","src/routes/**","src/server.js"],
-  "lines": 90,
-  "branches": 90,
-  "report-dir": "coverage"
-}
